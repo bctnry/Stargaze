@@ -6,20 +6,28 @@ type
   NodeType* = enum
     N_WORD
     N_INTEGER
+    N_STRING
+    N_CHAR
     N_LIST
   Node* = ref object
     line*: int
     col*: int
+    filename*: string
     case nType*: NodeType
     of N_WORD:
       wVal*: string
     of N_INTEGER:
       iVal*: int
+    of N_STRING:
+      strVal*: string
+    of N_CHAR:
+      chVal*: char
     of N_LIST:
       lVal*: seq[Node]
       tail*: Node
 
 proc `$`*(x: Node): string =
+  if x == nil: return "nil"
   case x.nType:
     of N_WORD:
       x.wVal
@@ -32,14 +40,16 @@ proc `$`*(x: Node): string =
                    ""
       "(" & x.lVal.mapIt($it).join(" ") & tail & ")"
 
-proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, nType: N_WORD, wVal: wVal)
-proc mkIntegerNode*(iVal: int): Node = Node(line: -1, col: -1, nType: N_INTEGER, iVal: iVal)
-proc mkListNode*(lVal: seq[Node], tail: Node): Node = Node(line: -1, col: -1, nType: N_LIST, lVal: lVal, tail: tail)
+proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_WORD, wVal: wVal)
+proc mkIntegerNode*(iVal: int): Node = Node(line: -1, col: -1, filename: "", nType: N_INTEGER, iVal: iVal)
+proc mkListNode*(lVal: seq[Node], tail: Node): Node = Node(line: -1, col: -1, filename: "", nType: N_LIST, lVal: lVal, tail: tail)
 proc withPos*(n: var Node, line: int, col: int): Node =
   n.line = line
   n.col = col
   return n
-
+proc withFileName*(n: var Node, filename: string): Node =
+  n.filename = filename
+  return n
       
 type
   # the reason why seq is not suitable here is that in the most direct style
@@ -51,6 +61,8 @@ type
   ValueType* = enum
     V_INTEGER
     V_BOOL
+    V_STRING
+    V_CHAR
     V_CLOSURE
     V_PRIMITIVE
     V_SYMBOL
@@ -61,6 +73,10 @@ type
       iVal*: int
     of V_BOOL:
       bVal*: bool
+    of V_STRING:
+      strVal*: string
+    of V_CHAR:
+      chVal*: char
     of V_CLOSURE:
       cenv*: Env
       # NOTE: we allow "capture-all" arg list like this:
@@ -88,6 +104,10 @@ proc `$`*(x: Value): string =
         "#t"
       else:
         "#f"
+    of V_STRING:
+      $x.strVal
+    of V_CHAR:
+      $x.chVal
     of V_CLOSURE:
       "<CLOSURE>"
     of V_PRIMITIVE:
@@ -127,6 +147,8 @@ proc registerValue*(e: Env, k: string, v: Value): void =
   
 proc mkIntegerValue*(iVal: int): Value = Value(vType: V_INTEGER, iVal: iVal)
 proc mkBoolValue*(bVal: bool): Value = Value(vType: V_BOOL, bVal: bVal)
+proc mkStrValue*(strVal: string): Value = Value(vType: V_STRING, strVal: strVal)
+proc mkCharValue*(chVal: char): Value = Value(vType: V_CHAR, chVal: chVal)
 proc mkClosureValue*(cenv: Env, carglist: seq[string], cvararg: string, cbody: seq[Node]): Value = Value(vType: V_CLOSURE, cenv: cenv, carglist: carglist, cvararg: cvararg, cbody: cbody)
 proc mkPrimitiveValue*(pbody: proc (x: seq[Node], tail: Node, e: Env): Value): Value = Value(vType: V_PRIMITIVE, pbody: pbody)
 proc mkSymbolValue*(sVal: string): Value = Value(vType: V_SYMBOL, sVal: sVal)
@@ -134,12 +156,16 @@ proc mkPairValue*(car: Value, cdr: Value): Value = Value(vType: V_PAIR, car: car
 
 proc errorWithReason*(n: Node, x: string): void =
   raise newException(ValueError, "(" & $n.line & ":" & $n.col & "): " & x)
-  
+
+# NOTE THAT we only treat the boolean false value as false.
+# nil is treated as empty list and empty list only.
 proc valueToBool*(x: Value): bool =
+  if x == nil: return true
   assert x.vType == V_BOOL
   return x.bVal
   
 proc isValueAList*(x: Value): bool =
+  if x == nil: return true
   if x.vType != V_PAIR: return false
   var subj = x
   while true:

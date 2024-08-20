@@ -1,0 +1,11 @@
+(def hanoi
+  (fn (n from to via)
+    (cond
+      ((leq n 0) (print 0))
+      ((leq n 1) (print from to))
+      (#t
+        (hanoi (sub n 1) from via to)
+	(print from to)
+	(hanoi (sub n 1) via to from)))))
+(print (hanoi 3 9998 9999 10000))
+        

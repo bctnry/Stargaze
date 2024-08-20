@@ -21,6 +21,7 @@ proc quoteAsValue*(x: Node): Value =
 proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
 proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env): Value
 proc evalSingle*(x: Node, e: Env): Value =
+  if x == nil: return nil
   case x.nType:
     of N_WORD:
       if x.wVal == "#t":
@@ -63,7 +64,10 @@ proc mkClosureBase*(argNode: Node, bodyNodeList: seq[Node]): Value =
   elif argNode.nType == N_LIST:
     # NOTE: doesn't support default arg val yet. assumes it's all N_WORD
     carglist = argNode.lVal.mapIt(it.wVal)
-    cvararg = argNode.tail.wVal
+    cvararg = if argNode.tail != nil:
+                argNode.tail.wVal
+              else:
+                ""
   else: argNode.errorWithReason("Invalid grammar for closure")
   return mkClosureValue(nil, carglist, cvararg, bodyNodeList)
 

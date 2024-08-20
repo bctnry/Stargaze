@@ -1,6 +1,7 @@
 import std/strutils
 import std/tables
 import std/sequtils
+import std/syncio
 import defs
 import core
 import session
@@ -105,6 +106,7 @@ rootEnv.registerValue(
       while i < arglen:
         assert fullArgList[i].vType == V_INTEGER
         r -= fullArgList[i].iVal
+        i += 1
       return mkIntegerValue(r)
   )
 )
@@ -125,6 +127,7 @@ rootEnv.registerValue(
       while i < arglen:
         assert fullArgList[i].vType == V_INTEGER
         r = r div fullArgList[i].iVal
+        i += 1
       return mkIntegerValue(r)
   )
 )
@@ -272,5 +275,80 @@ rootEnv.registerValue(
       return nil
   )
 )
-  
+
+# (and EXP1 ...)
+rootEnv.registerValue(
+  "and",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env): Value =
+      assert tail == nil
+      var lastVal = mkBoolValue(true)
+      for k in x:
+        let kres = k.evalSingle(e)
+        lastVal = kres
+        if kres.vType == V_BOOL and kres.bVal == false:
+          return mkBoolValue(false)
+      return lastVal
+  )
+)
+
+# (or EXP1 ...)
+rootEnv.registerValue(
+  "or",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env): Value =
+      assert tail == nil
+      for k in x:
+        let kres = k.evalSingle(e)
+        if not (kres.vType == V_BOOL and kres.bVal == false):
+          return kres
+      return mkBoolValue(false)
+  )
+)  
+
+# (not EXP1)
+rootEnv.registerValue(
+  "not",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env): Value =
+      assert tail == nil
+      assert x.len == 1
+      let kres = x[0].evalSingle(e)
+      if kres.vType == V_BOOL and kres.bVal == false:
+        return mkBoolValue(true)
+      else:
+        return mkBoolValue(false)
+  )
+)
+
+# (leq EXP1 EXP2)
+rootEnv.registerValue(
+  "leq",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env): Value =
+      assert tail == nil
+      assert x.len == 2
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      assert kres1.vType == V_INTEGER
+      assert kres2.vType == V_INTEGER
+      return mkBoolValue(kres1.iVal <= kres2.iVal)
+  )
+)
+
+# (print EXP1)
+rootEnv.registerValue(
+  "print",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        assert t.isValueAList
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      for k in fullArgList:
+        stdout.write($k)
+      return nil
+  )
+)
 

@@ -1,4 +1,28 @@
 * Stargaze
 
+A tiny LISP dialect.
 
+Currently supports:
+
+#+begin_src scheme
+  (def NAME BODY)
+  (fn ARGLIST BODY)
+  (if COND THEN-CLAUSE ELSE-CLAUSE)
+  (atom VALUE)
+  (quote ANY)
+  (cond (COND1 CLAUSE1) ...)
+  (let ((NAME1 VALUE1) ...) BODY ...)
+  (letrec ((NAME1 VALUE1) ...) BODY ...)
+  (car VALUE)
+  (cdr VALUE)
+  (cons VALUE1 VALUE2)
+  (add INT1 ...)
+  (sub INT1 ...)
+  (mul INT1 ...)
+  (div INT1 ...)
+  (mod INT1 INT2)
+  (and VALUE1 ...)
+  (or VALUE1 ...)
+  (not VALUE)
+#+end_src
 
