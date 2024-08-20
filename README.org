@@ -24,5 +24,7 @@ Currently supports:
   (and VALUE1 ...)
   (or VALUE1 ...)
   (not VALUE)
+  (chr VALUE)
+  (ord VALUE)
 #+end_src
 

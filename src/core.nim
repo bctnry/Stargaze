@@ -1,7 +1,13 @@
 import std/sequtils
 import std/tables
+import std/options
 import aux
 import defs
+import error
+
+proc errorWithReason(n: Node, x: string): void =
+  n.registerError(x)
+  raise newException(ValueError, "")
 
 proc quoteAsValue*(x: Node): Value =
   if x == nil: return nil
@@ -10,6 +16,10 @@ proc quoteAsValue*(x: Node): Value =
       mkSymbolValue(x.wVal)
     of N_INTEGER:
       mkIntegerValue(x.iVal)
+    of N_CHAR:
+      mkCharValue(x.chVal)
+    of N_STRING:
+      mkStrValue(x.strVal)
     of N_LIST:
       var r = x.tail.quoteAsValue
       var i = x.lVal.len-1
@@ -19,7 +29,7 @@ proc quoteAsValue*(x: Node): Value =
       return r
 
 proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
-proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env): Value
+proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value
 proc evalSingle*(x: Node, e: Env): Value =
   if x == nil: return nil
   case x.nType:
@@ -29,22 +39,32 @@ proc evalSingle*(x: Node, e: Env): Value =
       elif x.wVal == "#f":
         return mkBoolValue(false)
       else:
-        return x.wVal.fromEnv(e)
+        let c = x.wVal.fromEnv(e)
+        if c.isNone():
+          x.errorWithReason("Cannot find name '" & x.wVal & "' in current environment.")
+        else:
+          return c.get()
     of N_INTEGER:
       return mkIntegerValue(x.iVal)
+    of N_CHAR:
+      return mkCharValue(x.chVal)
+    of N_STRING:
+      return mkStrValue(x.strVal)
     of N_LIST:
       if x.lVal.len <= 0:
         x.errorWithReason("Invalid syntax for call")
       var head = x.lVal[0].evalSingle(e)
+      if head == nil:
+        x.errorWithReason("Cannot call value '" & $x.lVal[0] & "'")
       var el: seq[Node] = x.lVal[1..<x.lVal.len]
       var etail: Node = x.tail
       case head.vType:
         of V_CLOSURE:
           return applyClosure(head, el.mapIt(it.evalSingle(e)), etail.evalSingle(e), e)
         of V_PRIMITIVE:
-          return applyPrimitive(head, el, etail, e)
+          return applyPrimitive(head, el, etail, e, x)
         else:
-          x.errorWithReason("Cannot apply " & $head & " as a function")
+          x.errorWithReason("Cannot apply '" & $head & "' as a function")
 proc evalMulti*(x: seq[Node], e: Env): Value =
   var last: Value = nil
   for k in x:
@@ -89,7 +109,7 @@ proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
   newEnvPage[x.cvararg] = restargs.seqToValueList
   return x.cbody.evalMulti(mkEnv(newEnvPage, x.cenv))
 
-proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env): Value =
+proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value =
   assert x.vType == V_PRIMITIVE
-  return x.pbody(arglist, argtail, e)
+  return x.pbody(arglist, argtail, e, call)
   

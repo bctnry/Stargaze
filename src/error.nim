@@ -1,4 +1,5 @@
 import source
+import defs
 
 type
   FMError* = ref object
@@ -6,6 +7,9 @@ type
     col*: int
     fileName*: string
     reason*: string
+
+proc `$`*(x: FMError): string =
+  x.fileName & "(" & $x.line & ":" & $x.col & "): " & x.reason
 
 var errorList: seq[FMError] = @[]
 
@@ -16,6 +20,15 @@ proc registerError*(reason: string): void =
   let fn = getCurrentFileName()
   let lc = getCurrentLineCol()
   errorList.add(FMError(line: lc.line, col: lc.col, fileName: fn, reason: reason))
+ 
+proc registerError*(filename: string, line: int, col: int, reason: string): void =
+  errorList.add(FMError(line: line, col: col, fileName: filename, reason: reason))
+
+proc registerError*(node: Node, reason: string): void =
+  let fn = node.filename
+  let line = node.line
+  let col = node.col
+  registerError(fn, line, col, reason)
 
 # NOTE: this is called by src/flowmark.nim, not here.
 proc reportAllError*(): void =

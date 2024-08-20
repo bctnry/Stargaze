@@ -1,6 +1,8 @@
 import std/strutils
 import std/tables
 import std/sequtils
+import std/options
+import aux
 
 type
   NodeType* = enum
@@ -26,6 +28,49 @@ type
       lVal*: seq[Node]
       tail*: Node
 
+const charLiteralMap = {
+  '\x00': "#\\NUL",
+  '\x01': "#\\SOH",
+  '\x02': "#\\STX",
+  '\x03': "#\\ETX",
+  '\x04': "#\\EOT",
+  '\x05': "#\\ENQ",
+  '\x06': "#\\ACK",
+  '\x07': "#\\BEL",
+  '\x08': "#\\BS",
+  '\x09': "#\\HT",
+  '\x0a': "#\\LF",
+  '\x0b': "#\\VT",
+  '\x0c': "#\\FF",
+  '\x0d': "#\\CR",
+  '\x0e': "#\\SO",
+  '\x0f': "#\\SI",
+  '\x10': "#\\DLE",
+  '\x11': "#\\DC1",
+  '\x12': "#\\DC2",
+  '\x13': "#\\DC3",
+  '\x14': "#\\DC4",
+  '\x15': "#\\NAK",
+  '\x16': "#\\SYN",
+  '\x17': "#\\ETB",
+  '\x18': "#\\CAN",
+  '\x19': "#\\EM",
+  '\x1a': "#\\SUB",
+  '\x1b': "#\\ESC",
+  '\x1c': "#\\FS",
+  '\x1d': "#\\GS",
+  '\x1e': "#\\RS",
+  '\x1f': "#\\US",
+  '\x7f': "#\\DEL",
+  '\x1b': "#\\esc",
+  '\x08': "#\\backspace",
+  '\x0a': "#\\linefeed",
+  '\x09': "#\\tab",
+  '\x0d': "#\\return",
+  '\x20': "#\\space",
+  '\x0a': "#\\newline", 
+}.toTable
+      
 proc `$`*(x: Node): string =
   if x == nil: return "nil"
   case x.nType:
@@ -33,6 +78,15 @@ proc `$`*(x: Node): string =
       x.wVal
     of N_INTEGER:
       $x.iVal
+    of N_STRING:
+      $x.strVal
+    of N_CHAR:
+      if x.chVal in charLiteralMap:
+        return charLiteralMap[x.chVal]
+      elif x.chVal <= '\x7f':
+        return "#\\" & $x.chVal
+      else:
+        return "#ch{" & (x.chVal.ord.intToHex) & "}"
     of N_LIST:
       let tail = if x.tail != nil:
                    " . " & $x.tail
@@ -42,12 +96,19 @@ proc `$`*(x: Node): string =
 
 proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_WORD, wVal: wVal)
 proc mkIntegerNode*(iVal: int): Node = Node(line: -1, col: -1, filename: "", nType: N_INTEGER, iVal: iVal)
+proc mkCharNode*(chVal: char): Node = Node(line: -1, col: -1, filename: "", nType: N_CHAR, chVal: chVal)
+proc mkStrNode*(strVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_STRING, strVal: strVal)
 proc mkListNode*(lVal: seq[Node], tail: Node): Node = Node(line: -1, col: -1, filename: "", nType: N_LIST, lVal: lVal, tail: tail)
 proc withPos*(n: var Node, line: int, col: int): Node =
   n.line = line
   n.col = col
   return n
 proc withFileName*(n: var Node, filename: string): Node =
+  n.filename = filename
+  return n
+proc withMetadata*(n: var Node, line: int, col: int, filename: string): Node =
+  n.line = line
+  n.col = col
   n.filename = filename
   return n
       
@@ -87,13 +148,23 @@ type
       cvararg*: string
       cbody*: seq[Node]
     of V_PRIMITIVE:
-      pbody*: proc (x: seq[Node], tail: Node, e: Env): Value
+      pbody*: proc (args: seq[Node], tail: Node, e: Env, call: Node): Value
     of V_SYMBOL:
       sVal*: string
     of V_PAIR:
       car*: Value
       cdr*: Value
 
+proc `$`*(vt: ValueType): string =
+  case vt:
+    of V_INTEGER: "INTEGER"
+    of V_BOOL: "BOOL"
+    of V_STRING: "STRING"
+    of V_CHAR: "CHAR"
+    of V_CLOSURE: "CLOSURE"
+    of V_PRIMITIVE: "PRIMITIVE"
+    of V_PAIR: "PAIR"
+    of V_SYMBOL: "SYMBOL"
 proc `$`*(x: Value): string =
   if x == nil: return "nil"
   case x.vType:
@@ -107,7 +178,12 @@ proc `$`*(x: Value): string =
     of V_STRING:
       $x.strVal
     of V_CHAR:
-      $x.chVal
+      if x.chVal in charLiteralMap:
+        return charLiteralMap[x.chVal]
+      elif x.chVal <= '\x7f':
+        return "#\\" & $x.chVal
+      else:
+        return "#ch{" & (x.chVal.ord.intToHex) & "}"
     of V_CLOSURE:
       "<CLOSURE>"
     of V_PRIMITIVE:
@@ -133,13 +209,13 @@ proc `$`*(x: Value): string =
 proc mkEnv*(page: TableRef[string, Value], parent: Env): Env = Env(page: page, parent: parent)
 proc mkEnv*(page: TableRef[string, Value]): Env = Env(page: page, parent: nil)
 
-proc fromEnv*(x: string, e: Env): Value =
+proc fromEnv*(x: string, e: Env): Option[Value] =
   var subj = e
   while subj != nil:
     let tp = subj.page
-    if tp.hasKey(x): return tp[x]
+    if tp.hasKey(x): return some(tp[x])
     subj = subj.parent
-  return nil
+  return none(Value)
 
 proc registerValue*(e: Env, k: string, v: Value): void =
   assert e != nil
@@ -150,12 +226,9 @@ proc mkBoolValue*(bVal: bool): Value = Value(vType: V_BOOL, bVal: bVal)
 proc mkStrValue*(strVal: string): Value = Value(vType: V_STRING, strVal: strVal)
 proc mkCharValue*(chVal: char): Value = Value(vType: V_CHAR, chVal: chVal)
 proc mkClosureValue*(cenv: Env, carglist: seq[string], cvararg: string, cbody: seq[Node]): Value = Value(vType: V_CLOSURE, cenv: cenv, carglist: carglist, cvararg: cvararg, cbody: cbody)
-proc mkPrimitiveValue*(pbody: proc (x: seq[Node], tail: Node, e: Env): Value): Value = Value(vType: V_PRIMITIVE, pbody: pbody)
+proc mkPrimitiveValue*(pbody: proc (x: seq[Node], tail: Node, e: Env, call: Node): Value): Value = Value(vType: V_PRIMITIVE, pbody: pbody)
 proc mkSymbolValue*(sVal: string): Value = Value(vType: V_SYMBOL, sVal: sVal)
 proc mkPairValue*(car: Value, cdr: Value): Value = Value(vType: V_PAIR, car: car, cdr: cdr)
-
-proc errorWithReason*(n: Node, x: string): void =
-  raise newException(ValueError, "(" & $n.line & ":" & $n.col & "): " & x)
 
 # NOTE THAT we only treat the boolean false value as false.
 # nil is treated as empty list and empty list only.

@@ -94,8 +94,11 @@ when isMainModule:
       let z = readStr(stdin)
       if z.isNone(): break
       z.get().addToREPL()
-      let res = processCurrentSourceFile()
-      echo res
+      try:
+        let res = processCurrentSourceFile()
+        echo res
+      except:
+        discard
       reportAllError()
 
 #when isMainModule:

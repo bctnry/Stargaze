@@ -1,0 +1,75 @@
+* Stargaze user manual
+
+(very early draft)
+
+
+** Lexical syntax
+
+*** Booleans
+
+Only the strings =#t= and =#f= are boolean values; they evaluate to true and false respectively.
+
+*** Strings
+
+There's only one kind of syntax for string literals: ="{string-piece}*"=, where =string-piece= is one of:
+
++ Normal characters.
++ Escape sequences, which starts with =\= and is of the following format:
+  + =\r=, =\n=, =\b=, =\t=, =\\=, =\"=, =\v=, =\f=, for carriage return, linefeed, backspace, horizontal tab, slash, double quote, vertical tab and form feed respectively.
+  + =\xHEX=, where =HEX= is the codepoint of character in hexadecimal, e.g. =\x61= is the same as =a=.
+
+*** Characters
+
+Two kinds of syntax for character literals:
+
++ =#\NAME= where =NAME= is the name for the character. =NAME= is often the character itself (e.g. =#\a= refers to the character =a=), but exceptions exist; see below.
++ =#ch{HEX}= where =HEX= is the codepoint in hexadecimal, e.g. =#ch{61}= is the same as =#\a=.
+
+As for the first kind, Scheme R4RS only explicitly declares a =#\space= and a =#\newline=. Stargaze (partly) follows [[https://groups.csail.mit.edu/mac/ftpdir/scheme-7.4/doc-html/scheme_6.html][the convention in MIT Scheme]], except that =#\newline= always corresponds to the ASCII LF regardless of the operating system. For this reason the following "character name"s are also defined in Stargaze:
+
++ All of the standard ASCII names for non-printing characters are supported. They can be used by prefixing with =#\=, e.g. =#\NUL=:
+  #+begin_src 
+  NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
+  BS      HT      LF      VT      FF      CR      SO      SI
+  DLE     DC1     DC2     DC3     DC4     NAK     SYN     ETB
+  CAN     EM      SUB     ESC     FS      GS      RS      US
+  DEL
+  #+end_src
++ A few other names are also defined:
+  + =#\esc=, for =#\ESC=. MIT Scheme used the string =#\altmode=, which we 
+  + =#\backspace= for =#\BS=
+  + =#\linefeed= for =#\LF= (also, as stated above, =#\newline=)
+  + =#\tab= for =#\HT=
+  + =#\return= for =#\CR=
+
+** Standard library
+
+*** Integer-related
+
++ =(int? EXP)=: Check if =EXP= is an integer.
+
+*** Character-related
+
++ =(chr INT)=: Convert =INT= into the corresponding character.
++ =(ord CHAR)=: Convert =CHAR= into the corresponding integer.
++ =(char? EXP)=: Check if =EXP= is a character.
+
+*** String-related
+
++ =(strref STR I)=: Retrieve the =I=-th (starting from 0) character of the string =STR=.
++ =(substr STR START END?)=: Retrieve the substring of the string =STR= starting from index =START= to index =END=. =END= is optional; if it's not provided, this function takes the substring starting from index =START= to the end of the string.
++ =(strappend STR1 ...)=: Return the string appended together from its arguments.
++ =(strsym STR)=: Convert a string to a symbol.
++ =(str? EXP)=: Check if =EXP= is a string.
+
+*** Symbol-related
+
++ =(symstr SYM)=: Convert a symbol to a string.
++ =(sym? EXP)=: Check if =EXP= is a symbol.
+
+*** List-related
+
++ =(list EXP1 ...)=: Combine its arguments into a list.
++ =(nil? EXP)=: Check if =EXP= is an empty list.
+
+  
