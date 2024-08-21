@@ -15,10 +15,11 @@ import source
 import path
 import error
 
+var env = newEnvFromRootEnv()
 proc processCurrentSourceFile(): Value =
   var fl = getCurrentSourceFile()
   var parseRes = fl.parseMultiNode()
-  var evalRes = parseRes.evalMulti(rootEnv)
+  var evalRes = parseRes.evalMulti(env)
   return evalRes
 
 proc readStr(p: File): Option[string] =

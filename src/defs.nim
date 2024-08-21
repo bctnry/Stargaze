@@ -128,6 +128,10 @@ type
     V_PRIMITIVE
     V_SYMBOL
     V_PAIR
+    V_MODULE
+  ImportDescriptor* = ref object
+    importPath*: string
+    importNameMapping*: TableRef[string,string]
   Value* = ref object
     case vType*: ValueType
     of V_INTEGER:
@@ -154,6 +158,10 @@ type
     of V_PAIR:
       car*: Value
       cdr*: Value
+    of V_MODULE:
+      envVal*: Env
+      exportedName*: seq[string]
+      importedName*: seq[ImportDescriptor]
 
 proc `$`*(vt: ValueType): string =
   case vt:
@@ -165,6 +173,7 @@ proc `$`*(vt: ValueType): string =
     of V_PRIMITIVE: "PRIMITIVE"
     of V_PAIR: "PAIR"
     of V_SYMBOL: "SYMBOL"
+    of V_MODULE: "MODULE"
 proc `$`*(x: Value): string =
   if x == nil: return "nil"
   case x.vType:
@@ -205,6 +214,8 @@ proc `$`*(x: Value): string =
                     else:
                       " . " & $x.cdr
       "(" & l.mapIt($it).join(" ") & tailstr & ")"
+    of V_MODULE:
+      "<MODULE>"
       
 proc mkEnv*(page: TableRef[string, Value], parent: Env): Env = Env(page: page, parent: parent)
 proc mkEnv*(page: TableRef[string, Value]): Env = Env(page: page, parent: nil)
