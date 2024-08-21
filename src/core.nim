@@ -27,6 +27,8 @@ proc quoteAsValue*(x: Node): Value =
         r = mkPairValue(x.lVal[i].quoteAsValue, r)
         i -= 1
       return r
+    of N_VECTOR:
+      mkVectorValue(x.vVal.mapIt(it.quoteAsValue))
 
 proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
 proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value
@@ -65,6 +67,8 @@ proc evalSingle*(x: Node, e: Env): Value =
           return applyPrimitive(head, el, etail, e, x)
         else:
           x.errorWithReason("Cannot apply '" & $head & "' as a function")
+    of N_VECTOR:
+      return mkVectorValue(x.vVal.mapIt(it.evalSingle(e)))
 proc evalMulti*(x: seq[Node], e: Env): Value =
   var last: Value = nil
   for k in x:

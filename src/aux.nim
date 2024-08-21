@@ -36,4 +36,16 @@ proc intToHex*(x: int): string =
     res.add(preres[i])
     i -= 1
   return res
-  
+
+proc readStrForREPL*(x: File): string =
+  var res = ""
+  while true:
+    let ch = x.readChar()
+    if ch == '\r':
+      res.add('\n')
+    elif ch == '\n':
+      break
+    else:
+      res.add(ch)
+  return res
+      

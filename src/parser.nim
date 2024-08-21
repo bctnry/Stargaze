@@ -11,9 +11,6 @@ proc isDigit(x: char): bool =
   let o = x.ord
   '0'.ord <= o and o <= '9'.ord
 
-proc errorWithReason*(ps: Filelike, x: string): void =
-  raise newException(ValueError, ps.name & "(" & $ps.line & ":" & $ps.col & "): " & x)
-
 proc tryPeekChar(x: var Filelike): Option[char] =
   try:
     let ch = x.peekChar()
@@ -81,7 +78,7 @@ proc takeWord(x: var Filelike): string =
   var s = ""
   while x.tryPeekChar().isSome():
     let ch = x.tryPeekChar().get()
-    if ch.isAlphaNumeric() or "#\\{}<>+=/%$^&*@:".contains(ch):
+    if ch.isAlphaNumeric() or "#\\<>+=/%$^&*@:!".contains(ch):
       s.add(ch)
       discard x.tryReadChar()
       continue
@@ -98,7 +95,7 @@ proc nextCharExistsAndIsNot(x: var Filelike, c: char): bool =
   x.tryPeekChar().isSome() and x.tryPeekChar().get() != c
 
 proc recognizeCharLiteral1(x: string): Node
-proc recognizeCharLiteral2(x: string): Node
+proc recognizeCharLiteral2(hex: string): Node
 # NOTE: these two modifies the argument.
 proc parseMultiNode*(x: var Filelike): seq[Node]
 proc parseSingleNode*(x: var Filelike): Node =
@@ -120,7 +117,7 @@ proc parseSingleNode*(x: var Filelike): Node =
       tail = x.parseSingleNode
       x.skipWhiteAndComment
     if x.textEnded or x.nextCharExistsAndIsNot(')'):
-      x.errorWithReason("Right parenthesis required.")
+      registerError("Right parenthesis required.")
     x.nextChar
     var res = mkListNode(lVal, tail)
     return res.withMetadata(line, col, fn)
@@ -194,60 +191,93 @@ proc parseSingleNode*(x: var Filelike): Node =
     registerError("Invalid syntax for string literal")
     return nil
   else:
-    let v = x.takeWord()
-    if v.len <= 0: return nil
-    if v.startsWith("#\\"):
-      var res = recognizeCharLiteral1(v)
-      return res.withMetadata(line, col, fn)
-    elif v.startsWith("#ch{"):
-      if not v.endsWith("}"):
-        registerError("Invalid syntax for character literal")
-      else:
-        var res = recognizeCharLiteral2(v)
+    let ch = x.tryPeekChar()
+    if ch.isNone(): return nil
+    if ch.get() == '#':
+      discard x.tryReadChar()
+      let ch = x.tryPeekChar()
+      if ch.isNone(): registerError("Invalid syntax")
+      if ch.get() == '{':
+        # vector.
+        discard x.tryReadChar()
+        var nodeList = x.parseMultiNode()
+        if x.tryPeekChar().isNone() or x.tryPeekChar().get() != '}':
+          registerError("Invalid syntax for VECTOR literal")
+        discard x.tryReadChar()
+        var res = mkVectorNode(nodeList)
         return res.withMetadata(line, col, fn)
-    var res = mkWordNode(v)
-    return res.withMetadata(line, col, fn)
+      else:
+        let v = x.takeWord()
+        if v.startsWith("\\"):
+          var res = recognizeCharLiteral1(v)
+          return res.withMetadata(line, col, fn)
+        elif v == "ch":
+          if x.tryPeekChar().isNone() or x.tryPeekChar().get() != '{':
+            registerError("Invalid syntax for CHAR literal")
+          discard x.tryReadChar()
+          var s = ""
+          while x.tryPeekChar().isSome():
+            let ch = x.tryPeekChar().get()
+            if ch.isHexDigit():
+              s.add(ch)
+              discard x.tryReadChar()
+              continue
+            else:
+              break
+          if not (x.tryPeekChar().isSome() and x.tryPeekChar().get() == '}'):
+            registerError("Invalid syntax for CHAR literal")
+          discard x.tryReadChar()
+          var res = recognizeCharLiteral2(s)
+          return res.withMetadata(line, col, fn)
+        else:
+          var res = mkWordNode("#" & v)
+          return res.withMetadata(line, col, fn)
+    else:
+      let v = x.takeWord()
+      if v.len <= 0: return nil
+      var res = mkWordNode(v)
+      return res.withMetadata(line, col, fn)
 
 const charLiteral1Map* = {
-  "#\\NUL": '\x00',
-  "#\\SOH": '\x01',
-  "#\\STX": '\x02',
-  "#\\ETX": '\x03',
-  "#\\EOT": '\x04',
-  "#\\ENQ": '\x05',
-  "#\\ACK": '\x06',
-  "#\\BEL": '\x07',
-  "#\\BS": '\x08',
-  "#\\HT": '\x09',
-  "#\\LF": '\x0a',
-  "#\\VT": '\x0b',
-  "#\\FF": '\x0c',
-  "#\\CR": '\x0d',
-  "#\\SO": '\x0e',
-  "#\\SI": '\x0f',
-  "#\\DLE": '\x10',
-  "#\\DC1": '\x11',
-  "#\\DC2": '\x12',
-  "#\\DC3": '\x13',
-  "#\\DC4": '\x14',
-  "#\\NAK": '\x15',
-  "#\\SYN": '\x16',
-  "#\\ETB": '\x17',
-  "#\\CAN": '\x18',
-  "#\\EM": '\x19',
-  "#\\SUB": '\x1a',
-  "#\\ESC": '\x1b',
-  "#\\FS": '\x1c',
-  "#\\GS": '\x1d',
-  "#\\RS": '\x1e',
-  "#\\US": '\x1f',
-  "#\\DEL": '\x7f',
-  "#\\esc": '\x1b',
-  "#\\backspace": '\x08',
-  "#\\linefeed": '\x0a',
-  "#\\tab": '\x09',
-  "#\\return": '\x0d',
-  "#\\space": '\x20',
+  "\\NUL": '\x00',
+  "\\SOH": '\x01',
+  "\\STX": '\x02',
+  "\\ETX": '\x03',
+  "\\EOT": '\x04',
+  "\\ENQ": '\x05',
+  "\\ACK": '\x06',
+  "\\BEL": '\x07',
+  "\\BS": '\x08',
+  "\\HT": '\x09',
+  "\\LF": '\x0a',
+  "\\VT": '\x0b',
+  "\\FF": '\x0c',
+  "\\CR": '\x0d',
+  "\\SO": '\x0e',
+  "\\SI": '\x0f',
+  "\\DLE": '\x10',
+  "\\DC1": '\x11',
+  "\\DC2": '\x12',
+  "\\DC3": '\x13',
+  "\\DC4": '\x14',
+  "\\NAK": '\x15',
+  "\\SYN": '\x16',
+  "\\ETB": '\x17',
+  "\\CAN": '\x18',
+  "\\EM": '\x19',
+  "\\SUB": '\x1a',
+  "\\ESC": '\x1b',
+  "\\FS": '\x1c',
+  "\\GS": '\x1d',
+  "\\RS": '\x1e',
+  "\\US": '\x1f',
+  "\\DEL": '\x7f',
+  "\\esc": '\x1b',
+  "\\backspace": '\x08',
+  "\\linefeed": '\x0a',
+  "\\tab": '\x09',
+  "\\return": '\x0d',
+  "\\space": '\x20',
   "#\\newline": '\x0a'
 }.toTable
 
@@ -255,10 +285,9 @@ proc recognizeCharLiteral1(x: string): Node =
   if x in charLiteral1Map:
     return mkCharNode(charLiteral1Map[x])
   else:
-    return mkCharNode(x[2])
+    return mkCharNode(x[1])
 
-proc recognizeCharLiteral2(x: string): Node =
-  let hex = x[4..<x.len-1]
+proc recognizeCharLiteral2(hex: string): Node =
   return mkCharNode(hex.hexToInt.chr)
 
 proc parseMultiNode*(x: var Filelike): seq[Node] =

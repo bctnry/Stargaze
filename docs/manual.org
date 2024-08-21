@@ -5,6 +5,10 @@
 
 ** Lexical syntax
 
+*** Comment
+
+Comment in Stargaze starts with =;=.
+
 *** Booleans
 
 Only the strings =#t= and =#f= are boolean values; they evaluate to true and false respectively.
@@ -44,6 +48,15 @@ As for the first kind, Scheme R4RS only explicitly declares a =#\space= and a =#
 
 ** Language manual
 
++ =(def NAME BODY)=: Bind the value =BODY= to the name =NAME= in the current environment.
++ =(fn ARGLIST BODY)=: Anonymous function.
++ =(if COND THEN_CLAUSE ELSE_CLAUSE)=: Simple branching.
++ =(cond (COND1 CLAUSE1) ...)=: Multiway branching.
++ =(let ((NAME1 EXP1) ...) BODY ...)=: =let=-binding.
++ =(letrec ((NAME1 EXP1) ...) BODY ...)=: =letrec=-binding.
++ =(quote ...)=: Quote its argument as symbolic values
++ =(set! NAME VALUE)=: Assign =VALUE= to the name =NAME=.
+
 *** Module-related
 
 + =(include STR)=: Include a file.
@@ -61,17 +74,32 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 
 ** Standard library
 
-*** Integer-related
+*** Miscellaneous
+
++ =(atom? EXP)=: Check if =EXP= is an atom, i.e. a symbol, an integer, a boolean, a string, a character, or the empty list.
+
+*** Integer
 
 + =(int? EXP)=: Check if =EXP= is an integer.
++ =(add EXP ...)=: Return the sum of the arguments.
++ =(sub EXP1 ...)=: Return =EXP1 - EXP2 - ...=.
++ =(mul EXP ...)=: Return the product of the arguments.
++ =(div EXP1 ...)=: Return =EXP1 div EXP2 div ...=
++ =(mod EXP1 EXP2)=: Return =EXP1 % EXP2=.
 
-*** Character-related
+*** Pair
+
++ =(cons EXP1 EXP2)=: Return the pair of =EXP1= and =EXP2=
++ =(car EXP1)=: Return the first component of the pair =EXP1=.
++ =(cdr EXP1)=: Return the second component of the pair =EXP2=.
+  
+*** Character
 
 + =(chr INT)=: Convert =INT= into the corresponding character.
 + =(ord CHAR)=: Convert =CHAR= into the corresponding integer.
 + =(char? EXP)=: Check if =EXP= is a character.
 
-*** String-related
+*** String
 
 + =(strref STR I)=: Retrieve the =I=-th (starting from 0) character of the string =STR=.
 + =(substr STR START END?)=: Retrieve the substring of the string =STR= starting from index =START= to index =END=. =END= is optional; if it's not provided, this function takes the substring starting from index =START= to the end of the string.
@@ -79,12 +107,18 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(strsym STR)=: Convert a string to a symbol.
 + =(str? EXP)=: Check if =EXP= is a string.
 
-*** Symbol-related
+*** Boolean
+
++ =(and EXP1 ...)=:
++ =(or EXP1 ...)=:
++ =(not EXP)=:
+
+*** Symbol
 
 + =(symstr SYM)=: Convert a symbol to a string.
 + =(sym? EXP)=: Check if =EXP= is a symbol.
 
-*** List-related
+*** List
 
 + =(list EXP1 ...)=: Combine its arguments into a list.
 + =(nil? EXP)=: Check if =EXP= is an empty list.

@@ -11,6 +11,7 @@ type
     N_STRING
     N_CHAR
     N_LIST
+    N_VECTOR
   Node* = ref object
     line*: int
     col*: int
@@ -27,6 +28,8 @@ type
     of N_LIST:
       lVal*: seq[Node]
       tail*: Node
+    of N_VECTOR:
+      vVal*: seq[Node]
 
 const charLiteralMap = {
   '\x00': "#\\NUL",
@@ -93,12 +96,16 @@ proc `$`*(x: Node): string =
                  else:
                    ""
       "(" & x.lVal.mapIt($it).join(" ") & tail & ")"
+    of N_VECTOR:
+      "#{" & x.vVal.mapIt($it).join(" ") & "}"
+       
 
 proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_WORD, wVal: wVal)
 proc mkIntegerNode*(iVal: int): Node = Node(line: -1, col: -1, filename: "", nType: N_INTEGER, iVal: iVal)
 proc mkCharNode*(chVal: char): Node = Node(line: -1, col: -1, filename: "", nType: N_CHAR, chVal: chVal)
 proc mkStrNode*(strVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_STRING, strVal: strVal)
 proc mkListNode*(lVal: seq[Node], tail: Node): Node = Node(line: -1, col: -1, filename: "", nType: N_LIST, lVal: lVal, tail: tail)
+proc mkVectorNode*(vVal: seq[Node]): Node = Node(line: -1, col: -1, filename: "", nType: N_VECTOR, vVal: vVal)
 proc withPos*(n: var Node, line: int, col: int): Node =
   n.line = line
   n.col = col
@@ -128,7 +135,7 @@ type
     V_PRIMITIVE
     V_SYMBOL
     V_PAIR
-    V_MODULE
+    V_VECTOR
   ImportDescriptor* = ref object
     importPath*: string
     importNameMapping*: TableRef[string,string]
@@ -158,10 +165,8 @@ type
     of V_PAIR:
       car*: Value
       cdr*: Value
-    of V_MODULE:
-      envVal*: Env
-      exportedName*: seq[string]
-      importedName*: seq[ImportDescriptor]
+    of V_VECTOR:
+      vVal*: seq[Value]
 
 proc `$`*(vt: ValueType): string =
   case vt:
@@ -173,7 +178,8 @@ proc `$`*(vt: ValueType): string =
     of V_PRIMITIVE: "PRIMITIVE"
     of V_PAIR: "PAIR"
     of V_SYMBOL: "SYMBOL"
-    of V_MODULE: "MODULE"
+    of V_VECTOR: "VECTOR"
+
 proc `$`*(x: Value): string =
   if x == nil: return "nil"
   case x.vType:
@@ -214,8 +220,9 @@ proc `$`*(x: Value): string =
                     else:
                       " . " & $x.cdr
       "(" & l.mapIt($it).join(" ") & tailstr & ")"
-    of V_MODULE:
-      "<MODULE>"
+    of V_VECTOR:
+      "#{" & x.vVal.mapIt($it).join(" ") & "}"
+          
       
 proc mkEnv*(page: TableRef[string, Value], parent: Env): Env = Env(page: page, parent: parent)
 proc mkEnv*(page: TableRef[string, Value]): Env = Env(page: page, parent: nil)
@@ -240,6 +247,27 @@ proc mkClosureValue*(cenv: Env, carglist: seq[string], cvararg: string, cbody: s
 proc mkPrimitiveValue*(pbody: proc (x: seq[Node], tail: Node, e: Env, call: Node): Value): Value = Value(vType: V_PRIMITIVE, pbody: pbody)
 proc mkSymbolValue*(sVal: string): Value = Value(vType: V_SYMBOL, sVal: sVal)
 proc mkPairValue*(car: Value, cdr: Value): Value = Value(vType: V_PAIR, car: car, cdr: cdr)
+proc mkVectorValue*(vVal: seq[Value]): Value = Value(vType: V_VECTOR, vVal: vVal)
+
+proc valueEqual*(a: Value, b: Value): bool =
+  if a == nil and b == nil: return true
+  elif a == nil or b == nil: return false
+  if a.vType != b.vType: return false
+  case a.vType:
+    of V_INTEGER: return a.iVal == b.iVal
+    of V_BOOL: return a.bVal == b.bVal
+    of V_STRING: return a.strVal == b.strVal
+    of V_CHAR: return a.chVal == b.chVal
+    of V_SYMBOL: return a.sVal == b.sVal
+    of V_PAIR: return a.car.valueEqual(b.car) and a.cdr.valueEqual(b.cdr)
+    of V_VECTOR:
+      if not (a.vVal.len == b.vVal.len): return false
+      var i = 0
+      while i < a.vVal.len:
+        if not a.vVal[i].valueEqual(b.vVal[i]): return false
+      return true
+    else:
+      return false
 
 # NOTE THAT we only treat the boolean false value as false.
 # nil is treated as empty list and empty list only.

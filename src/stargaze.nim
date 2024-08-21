@@ -12,11 +12,15 @@ import source
 import path
 import error
 
+# DO NOT REMOVE THE FOLLOWING LINE - this is used to initialize primitives.
+import primitives
+
 initNewEnv()
 proc processCurrentSourceFile*(): Value =
   var fl = getCurrentSourceFile()
   var envPage = getCurrentEnv().page
   var parseRes = fl.parseMultiNode()
+  # if hasError(): raise newException(ValueError, "")
   prepareForNewModule()
   var evalRes = parseRes.evalMulti(getCurrentEnv())
   for kp in getCurrentExportList():
@@ -26,18 +30,20 @@ proc processCurrentSourceFile*(): Value =
       registerError(call.filename, call.line, call.col, "Name '" & name & "' not found in module")
   return evalRes
   
-proc readStr(p: File): Option[string] =
+proc readStrForREPL(p: File): Option[string] =
   var res: string = ""
   try:
     while true:
       let ch = p.readChar()
       if ch == '\n':
         return some(res)
-      res.add(ch)
+      elif ch == '\r':
+        res.add('\n')
+      else:
+        res.add(ch)
   except:
     if res.len() > 0: return some(res)
     else: return none(string)
-  
 
 let helpStr = """
 Usage: stargaze [options] [file]
@@ -96,7 +102,7 @@ when isMainModule:
     while true:
       stdout.write(prompt)
       stdout.flushFile()
-      let z = readStr(stdin)
+      let z = readStrForREPL(stdin)
       if z.isNone(): break
       z.get().addToREPL()
       try:
@@ -106,15 +112,4 @@ when isMainModule:
         discard
       reportAllError()
 
-#when isMainModule:
-  # echo "def a [x y] [add x y]".parseMulti[0].evalMulti(rootEnv)
-  # echo "3 4 5 6 7 @[add abc abc] def a [x y] [add x y] a 3 4".parseMulti[0].evalMulti(rootEnv)
-  # echo "if false 3 [add abc abc]".parseMulti[0].evalMulti(rootEnv)
-  # echo "3 4 5 + 6 7 [&add abc abc]".parseMulti[0]
-#  var x = "(def blah #t) (quote (if (atom 3) (add 3 4) (if #f 4 5)))".mkStringFilelike()
-  # var x = "if #t".mkParseState()
-  # echo x.parseMultiNode()
-#  echo x.parseMultiNode.evalMulti(rootEnv)
-  # [0].evalSingle(rootEnv)
-#  discard nil
-  
+      

@@ -30,7 +30,10 @@ proc registerError*(node: Node, reason: string): void =
   let col = node.col
   registerError(fn, line, col, reason)
 
-# NOTE: this is called by src/flowmark.nim, not here.
+proc hasError*(): bool =
+  errorList.len > 0
+  
+# NOTE: this is called by src/stargaze.nim, not here.
 proc reportAllError*(): void =
   for x in errorList:
     stderr.write(x.fileName & "(" & $(x.line+1) & "," & $(x.col+1) & "): " & x.reason & "\n")
