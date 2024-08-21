@@ -1,0 +1,4 @@
+(let ((a (openoutput "test.txt" "a")))
+  (writech a #\a)
+  (writech a #\newline))
+  

@@ -12,6 +12,7 @@ type
     N_CHAR
     N_LIST
     N_VECTOR
+    N_EOF
   Node* = ref object
     line*: int
     col*: int
@@ -30,6 +31,8 @@ type
       tail*: Node
     of N_VECTOR:
       vVal*: seq[Node]
+    of N_EOF:
+      discard
 
 const charLiteralMap = {
   '\x00': "#\\NUL",
@@ -98,6 +101,8 @@ proc `$`*(x: Node): string =
       "(" & x.lVal.mapIt($it).join(" ") & tail & ")"
     of N_VECTOR:
       "#{" & x.vVal.mapIt($it).join(" ") & "}"
+    of N_EOF:
+      "#eof"
        
 
 proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_WORD, wVal: wVal)
@@ -106,6 +111,7 @@ proc mkCharNode*(chVal: char): Node = Node(line: -1, col: -1, filename: "", nTyp
 proc mkStrNode*(strVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_STRING, strVal: strVal)
 proc mkListNode*(lVal: seq[Node], tail: Node): Node = Node(line: -1, col: -1, filename: "", nType: N_LIST, lVal: lVal, tail: tail)
 proc mkVectorNode*(vVal: seq[Node]): Node = Node(line: -1, col: -1, filename: "", nType: N_VECTOR, vVal: vVal)
+proc mkEOFNode*(): Node = Node(line: -1, col: -1, filename: "", nType: N_EOF)
 proc withPos*(n: var Node, line: int, col: int): Node =
   n.line = line
   n.col = col
@@ -136,6 +142,9 @@ type
     V_SYMBOL
     V_PAIR
     V_VECTOR
+    V_CHAR_INPUT
+    V_CHAR_OUTPUT
+    V_EOF
   ImportDescriptor* = ref object
     importPath*: string
     importNameMapping*: TableRef[string,string]
@@ -167,6 +176,14 @@ type
       cdr*: Value
     of V_VECTOR:
       vVal*: seq[Value]
+    of V_CHAR_INPUT:
+      charInClosed*: bool
+      charInFile*: File
+    of V_CHAR_OUTPUT:
+      charOutClosed*: bool
+      charOutFile*: File
+    of V_EOF:
+      discard
 
 proc `$`*(vt: ValueType): string =
   case vt:
@@ -179,6 +196,9 @@ proc `$`*(vt: ValueType): string =
     of V_PAIR: "PAIR"
     of V_SYMBOL: "SYMBOL"
     of V_VECTOR: "VECTOR"
+    of V_CHAR_INPUT: "CHAR_INPUT"
+    of V_CHAR_OUTPUT: "CHAR_OUTPUT"
+    of V_EOF: "EOF"
 
 proc `$`*(x: Value): string =
   if x == nil: return "nil"
@@ -222,6 +242,17 @@ proc `$`*(x: Value): string =
       "(" & l.mapIt($it).join(" ") & tailstr & ")"
     of V_VECTOR:
       "#{" & x.vVal.mapIt($it).join(" ") & "}"
+    of V_CHAR_INPUT:
+      "<CHAR_INPUT:" & (if x.charInClosed:
+                          "CLOSED"
+                        else:
+                          "OPEN") & ">"
+    of V_CHAR_OUTPUT:
+      "<CHAR_OUTPUT:" & (if x.charOutClosed:
+                           "CLOSED"
+                         else:
+                           "OPEN") & ">"
+    of V_EOF: "#eof"
           
       
 proc mkEnv*(page: TableRef[string, Value], parent: Env): Env = Env(page: page, parent: parent)
@@ -248,6 +279,14 @@ proc mkPrimitiveValue*(pbody: proc (x: seq[Node], tail: Node, e: Env, call: Node
 proc mkSymbolValue*(sVal: string): Value = Value(vType: V_SYMBOL, sVal: sVal)
 proc mkPairValue*(car: Value, cdr: Value): Value = Value(vType: V_PAIR, car: car, cdr: cdr)
 proc mkVectorValue*(vVal: seq[Value]): Value = Value(vType: V_VECTOR, vVal: vVal)
+proc mkCharInputValue*(f: File): Value = Value(vType: V_CHAR_INPUT, charInClosed: false, charInFile: f)
+proc mkCharOutputValue*(f: File): Value = Value(vType: V_CHAR_OUTPUT, charOutClosed: false, charOutFile: f)
+let GlobalEOFValue*: Value = Value(vType: V_EOF)
+let GlobalTrueValue*: Value = Value(vType: V_BOOL, bVal: true)
+let GlobalFalseValue*: Value = Value(vType: V_BOOL, bVal: false)
+let GlobalStdInValue*: Value = mkCharInputValue(stdin)
+let GlobalStdOutValue*: Value = mkCharOutputValue(stdout)
+let GlobalStdErrValue*: Value = mkCharOutputValue(stderr)
 
 proc valueEqual*(a: Value, b: Value): bool =
   if a == nil and b == nil: return true

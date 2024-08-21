@@ -208,7 +208,10 @@ proc parseSingleNode*(x: var Filelike): Node =
         return res.withMetadata(line, col, fn)
       else:
         let v = x.takeWord()
-        if v.startsWith("\\"):
+        if v == "eof":
+          var res = mkEOFNode()
+          return res.withMetadata(line, col, fn)
+        elif v.startsWith("\\"):
           var res = recognizeCharLiteral1(v)
           return res.withMetadata(line, col, fn)
         elif v == "ch":

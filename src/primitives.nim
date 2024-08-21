@@ -78,10 +78,13 @@ rootEnv.registerValue(
       if fullArgList.len != 1:
         call.invalidFormErrorWithReason("atom?")
       let r = x[0].evalSingle(e)
-      return mkBoolValue(
-        r == nil or (
+      return (
+        if r == nil or (
           r.vType == V_INTEGER or r.vType == V_SYMBOL or r.vType == V_BOOL or r.vType == V_STRING or r.vType == V_CHAR
-        )
+        ):
+          GlobalTrueValue
+        else:
+          GlobalFalseValue  
       )
   )
 )
@@ -329,12 +332,12 @@ rootEnv.registerValue(
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if tail != nil: tail.invalidFormErrorWithReason("and")
-      var lastVal = mkBoolValue(true)
+      var lastVal = GlobalTrueValue
       for k in x:
         let kres = k.evalSingle(e)
         lastVal = kres
         if kres.vType == V_BOOL and kres.bVal == false:
-          return mkBoolValue(false)
+          return GlobalFalseValue
       return lastVal
   )
 )
@@ -349,7 +352,7 @@ rootEnv.registerValue(
         let kres = k.evalSingle(e)
         if not (kres.vType == V_BOOL and kres.bVal == false):
           return kres
-      return mkBoolValue(false)
+      return GlobalFalseValue
   )
 )  
 
@@ -362,9 +365,9 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("not", "1 argument")
       let kres = x[0].evalSingle(e)
       if kres.vType == V_BOOL and kres.bVal == false:
-        return mkBoolValue(true)
+        return GlobalTrueValue
       else:
-        return mkBoolValue(false)
+        return GlobalFalseValue
   )
 )
 
@@ -379,7 +382,10 @@ rootEnv.registerValue(
       let kres2 = x[1].evalSingle(e)
       if kres1.vType != V_INTEGER: call.typeErrorWithReason(V_INTEGER, 0, kres1.vType)
       if kres2.vType != V_INTEGER: call.typeErrorWithReason(V_INTEGER, 1, kres2.vType)
-      return mkBoolValue(kres1.iVal <= kres2.iVal)
+      return (if kres1.iVal <= kres2.iVal:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
   )
 )
 
@@ -546,7 +552,10 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("int?")
       let r = x[0].evalSingle(e)
-      return mkBoolValue(r != nil and r.vType == V_INTEGER)
+      return (if r != nil and r.vType == V_INTEGER:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
   )
 )
 
@@ -556,7 +565,10 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("char?")
       let r = x[0].evalSingle(e)
-      return mkBoolValue(r != nil and r.vType == V_CHAR)
+      return (if r != nil and r.vType == V_CHAR:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
   )
 )
 
@@ -566,7 +578,10 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("str?")
       let r = x[0].evalSingle(e)
-      return mkBoolValue(r != nil and r.vType == V_STRING)
+      return (if r != nil and r.vType == V_STRING:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
   )
 )
 
@@ -576,7 +591,10 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("sym?")
       let r = x[0].evalSingle(e)
-      return mkBoolValue(r != nil and r.vType == V_SYMBOL)
+      return (if r != nil and r.vType == V_SYMBOL:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
   )
 )
 
@@ -586,7 +604,10 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("nil?")
       let r = x[0].evalSingle(e)
-      return mkBoolValue(r == nil)
+      return (if r == nil:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
   )
 )
 
@@ -597,7 +618,7 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("eq")
       let a = x[0].evalSingle(e)
       let b = x[1].evalSingle(e)
-      return mkBoolValue(a.valueEqual(b))
+      return (if a.valueEqual(b): GlobalTrueValue else: GlobalFalseValue)
   )
 )
 
@@ -757,6 +778,20 @@ rootEnv.registerValue(
 )
 
 rootEnv.registerValue(
+  "vec?",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 1: call.invalidFormErrorWithReason("vec?", "1 argument")
+      return (if fullArgList[0].vType == V_VECTOR: GlobalTrueValue else: GlobalFalseValue)
+  )
+)
+
+rootEnv.registerValue(
   "listvec",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
@@ -853,8 +888,152 @@ rootEnv.registerValue(
   )
 )
 
+rootEnv.registerValue(
+  "eof?",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 1: call.invalidFormErrorWithReason("eof?", "1 argument")
+      return (if fullArgList[0].vType == V_EOF:
+                GlobalTrueValue
+              else:
+                GlobalFalseValue)
+  )
+)
 
+rootEnv.registerValue(
+  "readch",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 1: call.invalidFormErrorWithReason("readch", "1 argument")
+      let f = fullArgList[0]
+      if f.vType != V_CHAR_INPUT:
+        call.typeErrorWithReason(V_CHAR_INPUT, 0, f.vType)
+      if f.charInClosed: return GlobalEOFValue
+      try:
+        let ch = f.charInFile.readChar()
+        return mkCharValue(ch)
+      except:
+        return GlobalEOFValue
+  )
+)
 
+rootEnv.registerValue(
+  "writech",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 2: call.invalidFormErrorWithReason("writech", "1 argument")
+      let f = fullArgList[0]
+      if f.vType != V_CHAR_OUTPUT:
+        call.typeErrorWithReason(V_CHAR_OUTPUT, 0, f.vType)
+      let ch = fullArgList[1]
+      if ch.vType != V_CHAR:
+        call.typeErrorWithReason(V_CHAR, 1, ch.vType)
+      if f.charOutClosed: return nil
+      try:
+        f.charOutFile.write(ch.chVal)
+        return nil
+      except:
+        return nil
+  )
+)
 
+rootEnv.registerValue(
+  "close",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 1: call.invalidFormErrorWithReason("close", "1 argument")
+      var f = fullArgList[0]
+      if f.vType != V_CHAR_OUTPUT and f.vType != V_CHAR_INPUT:
+        call.errorWithReason("Type error: CHAR_OUTPUT or CHAR_INPUT required but " & $f.vType & " found for argument no. 1")
+      try:
+        if f.vType == V_CHAR_INPUT:
+          f.charInFile.close()
+          f.charInClosed = true
+        else:
+          f.charOutFile.close()
+          f.charOutClosed = true
+        return nil
+      except:
+        return nil
+  )
+)
 
+rootEnv.registerValue(
+  "openinput",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 1: call.invalidFormErrorWithReason("openinput", "1 argument")
+      var f = fullArgList[0]
+      if f.vType != V_STRING:
+        call.typeErrorWithReason(V_STRING, 0, f.vType)
+      let filemode = fmRead
+      try:
+        let file = open(f.strVal, filemode)
+        return mkCharInputValue(file)
+      except:
+        call.errorWithReason("Failed to open file: " & f.strVal)
+
+  )
+)
+
+rootEnv.registerValue(
+  "openoutput",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      if fullArgList.len != 1 and fullArgList.len != 2: call.invalidFormErrorWithReason("openoutput", "1 or 2 argument")
+      var f = fullArgList[0]
+      if f.vType != V_STRING:
+        call.typeErrorWithReason(V_STRING, 0, f.vType)
+      var filemode = ""
+      if fullArgList.len == 2:
+        let mode = fullArgList[1]
+        if mode.vType != V_STRING:
+          call.typeErrorWithReason(V_STRING, 1, mode.vType)
+        filemode = mode.strVal
+      let filemodeval = case filemode:
+                          of "x": fmReadWriteExisting
+                          of "a": fmAppend
+                          else: fmWrite
+      try:
+        
+        let file = open(f.strVal, filemodeval)
+        return mkCharOutputValue(file)
+      except:
+        call.errorWithReason("Failed to open file: " & f.strVal)
+  )
+)
+
+rootEnv.registerValue("stdin", GlobalStdInValue)
+rootEnv.registerValue("stdout", GlobalStdOutValue)
+rootEnv.registervalue("stderr", GlobalStdErrValue)
 

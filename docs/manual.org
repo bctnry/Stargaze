@@ -46,6 +46,10 @@ As for the first kind, Scheme R4RS only explicitly declares a =#\space= and a =#
   + =#\tab= for =#\HT=
   + =#\return= for =#\CR=
 
+*** Vector
+
+Vector literals can be constructed by surrounding values with =#{= and =}=.
+
 ** Language manual
 
 + =(def NAME BODY)=: Bind the value =BODY= to the name =NAME= in the current environment.
@@ -123,4 +127,25 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(list EXP1 ...)=: Combine its arguments into a list.
 + =(nil? EXP)=: Check if =EXP= is an empty list.
 
+*** Vector
+
++ =(vec? EXP)=: Check if =EXP= is a vector.
++ =(vector EXP1 ...)=: Combine its arguments into a vector.
++ =(listvec LIST)=: Convert =LIST= into a vector.
++ =(veclist VEC)=: Conver =VEC= into a list
++ =(vecref VEC INT)=: Return the =INT=-th element from =VEC=.
++ =(mkvec INT)=: Create a vector of size =INT=.
++ =(vecset! VEC INT VALUE)=: Set the =INT=-th element of =VEC= to value =VALUE=.
+  
+*** File input/output
+
++ =stdin=, =stdout=, =stderr=: Standard input, standard output and standard error.
++ =(eof? EXP)=: Check if =EXP= is the EOF object.
++ =(openinput STR)=: Open file =STR= as input.
++ =(openoutput STR MODE?)=: Open file =STR= as output.
+  + When =MODE= is not used (i.e. the form is =(openoutput STR)=), the file is opened for writing.
+  + When =MODE= is ="a"=, the file is opened for appending.
++ =(close FILE)=: Close a file.
++ =(readch FILE)=: Read a character from an input file.
++ =(writech FILE)=: Write a character to an output file.
   
