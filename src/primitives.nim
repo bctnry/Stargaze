@@ -1,4 +1,3 @@
-import std/strutils
 import std/tables
 import std/sequtils
 import std/syncio
@@ -518,8 +517,7 @@ rootEnv.registerValue(
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if tail != nil or x.len != 1:
-        call.registerError("Invalid form for 'strsym'")
-        return nil
+        call.invalidFormErrorWithReason("strsym")
       let t = x[0].evalSingle(e)
       if t.vType != V_STRING:
         call.registerError("Type error: STRING required but " & $t.vType & " found")
@@ -533,9 +531,7 @@ rootEnv.registerValue(
   "symstr",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if tail != nil or x.len != 1:
-        call.registerError("Invalid form for 'strsym'")
-        return nil
+      if tail != nil or x.len != 1: call.invalidFormErrorWithReason("symstr")
       let t = x[0].evalSingle(e)
       if t.vType != V_SYMBOL:
         call.registerError("Type error: SYMBOL required but " & $t.vType & " found")
@@ -635,4 +631,108 @@ rootEnv.registerValue(
         return nil
   )
 )
+
+rootEnv.registerValue(
+  "export",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: call.invalidFormErrorWithReason("export")
+      for k in x:
+        if k.nType != N_WORD:
+          k.invalidFormErrorWithReason("export")
+        exportName(k.wVal, call)
+      return nil
+  )
+)
+
+rootEnv.registerValue(
+  "import",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: call.invalidFormErrorWithReason("import")
+      if x.len < 1 or x.len > 2: call.invalidFormErrorWithReason("import")
+
+      # handle module desc...
+      var importedModuleName: string = ""
+      var prefix: string = ""
+      if x[0].nType == N_STRING:
+        importedModuleName = x[0].strVal
+      elif x[0].nType == N_LIST:
+        if x[0].tail != nil: x[0].invalidFormErrorWithReason("import")
+        if x[0].lVal.len != 2: x[0].invalidFormErrorWithReason("import")
+        let nameNode = x[0].lVal[0]
+        let prefixNode = x[0].lVal[1]
+        if nameNode.nType != N_STRING:
+          nameNode.errorWithReason("Module name must be a STRING")
+        if prefixNode.nType != N_WORD:
+          prefixNode.errorWithReason("Prefix must be a WORD")
+        importedModuleName = nameNode.strVal
+        prefix = prefixNode.wVal
+      else:
+        call.invalidFormErrorWithReason("import")
+      var renamingTable = newTable[string,string]()
+      var importedNames: seq[string] = @[]
+      if x.len > 1:
+        let renameListNode = x[1]
+        if renameListNode.tail != nil or renameListNode.nType != N_LIST: renameListNode.invalidFormErrorWithReason("import")
+        for k in renameListNode.lVal:
+          if k.nType == N_WORD: # with no renaming
+            importedNames.add(k.wVal)
+            renamingTable[k.wVal] = k.wVal
+          elif k.nType == N_LIST: # with renaming
+            if k.tail != nil or k.lVal.len != 2 or k.lVal[0].nType != N_WORD or k.lVal[1].nType != N_WORD:
+              k.invalidFormErrorWithReason("import")
+            importedNames.add(k.lVal[0].wVal)
+            renamingTable[k.lVal[0].wVal] = k.lVal[1].wVal
+          else:
+            k.invalidFormErrorWithReason("import")
+
+      # import the module.
+      # to import the module:
+      # 1.  save prev env & init new env
+      # 2.  read, parse and evaluate imported module with new env
+      # 3.  for all required name, check if name exists in export list
+      #     if exists, rename accordingly & insert into self env.
+      let thisEnv = getCurrentEnv()
+      let thisExportList = getCurrentExportList()
+      var envFromImportedModule: Env = nil
+      var exportListFromImportedModule: seq[(string, Node)] = @[]
+      let m = tryGetImportedModule(importedModuleName)
+      if m.isNone():
+        let moduleRealPath = resolveModuleByName(importedModuleName)
+        if moduleRealPath.isNone():
+          call.errorWithReason("Cannot find module '" & importedModuleName & "'")
+        prepareForNewModule()
+        useSourceFile(moduleRealPath.get())
+        var fl = getCurrentSourceFile()
+        initNewEnv()
+        var parseRes = fl.parseMultiNode()
+        discard parseRes.evalMulti(getCurrentEnv())
+        envFromImportedModule = getCurrentEnv()
+        exportListFromImportedModule = getCurrentExportList()
+        registerImportedModule(importedModuleName, envFromImportedModule, exportListFromImportedModule)
+      else:
+        envFromImportedModule = m.get()[0]
+        exportListFromImportedModule = m.get()[1]
+      setCurrentEnv(thisEnv)
+      restoreCurrentExportList(thisExportList)
+      if x.len == 1:
+        # import all.
+        for k in exportListFromImportedModule:
+          let name = k[0]
+          let v = name.fromEnv(envFromImportedModule)
+          if v.isNone():
+            call.errorWithReason("Cannot find name '" & name & "' in module " & importedModuleName)
+          e.registerValue(prefix & name, v.get())
+      else:
+        for k in importedNames:
+          let v = k.fromEnv(envFromImportedModule)
+          if v.isNone():
+            call.errorWithReason("Cannot find name '" & k & "' in module " & importedModuleName)
+          e.registerValue(renamingTable[k], v.get())
+      return nil
+  )
+)
+
+
 

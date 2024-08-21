@@ -1,3 +1,5 @@
+(export fac)
+
 (def fac
   (fn (n)
     (if (leq n 1)

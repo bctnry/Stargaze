@@ -1,0 +1,3 @@
+(import "fac")
+(import "fac")
+;; should only print "120" once.

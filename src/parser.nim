@@ -81,7 +81,7 @@ proc takeWord(x: var Filelike): string =
   var s = ""
   while x.tryPeekChar().isSome():
     let ch = x.tryPeekChar().get()
-    if ch.isAlphaNumeric() or "#\\{}<>+=/%$^&*@".contains(ch):
+    if ch.isAlphaNumeric() or "#\\{}<>+=/%$^&*@:".contains(ch):
       s.add(ch)
       discard x.tryReadChar()
       continue

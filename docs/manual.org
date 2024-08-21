@@ -42,6 +42,23 @@ As for the first kind, Scheme R4RS only explicitly declares a =#\space= and a =#
   + =#\tab= for =#\HT=
   + =#\return= for =#\CR=
 
+** Language manual
+
+*** Module-related
+
++ =(include STR)=: Include a file.
++ =(import MOD RENAME?)=:
+  + =MOD= can be one of two options:
+    + A string, which refers to the module.
+    + =(STR PREFIX)=, which prefix all exported name in =STR= with =PREFIX=.
+      + e.g. assumes that =mymodule= exports =func1=, =func2= and =func3=; =(import ("mymodule" xyz))= would import =func1= as =xyzfunc1=, =func2= as =xyzfunc2=, =func3= as =xyzfunc3=.
+  + =RENAME= is one of two followings:
+    + Nothing, in which case the form would be =(import MOD)=; this would import *all* exported name in =MOD=.
+    + A list of =(NAME NEWNAME)=, which would only import the *exported* names described by =NAME=, which would bind to =NEWNAME= when importing. This renaming takes precedence over prefixes, so =(import ("abc" abc) (myfunc1 defmyfunc1))= would import =myfunc1= from module ="abc"= into =defmyfunc1= instead of =abcmyfunc1= or =abcdefmyfunc1=.
+  + Note that =(import MOD)= means import *all* names from =MOD=, while =(import MOD ())= means import all the exported names in =()=, which means none of the exported names.
+in the imported module; =NEW_NAME= would be the effective name in the *importing* module for =NAME= in the *imported* module.
++ =(export NAME ...)=: Export 
+
 ** Standard library
 
 *** Integer-related

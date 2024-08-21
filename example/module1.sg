@@ -1,0 +1,16 @@
+(import "hanoi")
+(import ("fac" m:))
+(import "fac_module"
+  ((fac fac2)
+   fac3))
+;; import all names from "hanoi".
+;; import all names from "fac" prefixing them with "m:".
+;; import "fac" from "fac_module" & rename it to "fac2"
+;; import "fac3" from "fac_module"
+
+(print "---\n")
+(hanoi 3 "a" "b" "c")
+(print "---\n")
+(print (m:fac 6)) (print "\n")
+(print (fac2 6)) (print "\n")
+(print (fac3 6)) (print "\n")

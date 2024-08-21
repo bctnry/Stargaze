@@ -2,14 +2,11 @@ import std/syncio
 import std/options
 import std/cmdline
 import std/tables
-import std/strutils
 from std/paths import getCurrentDir, parentDir, Path
 import defs
-import filelike
 import parser
 import core
 import session
-import primitives
 import cmdargparse
 import source
 import path
@@ -18,10 +15,15 @@ import error
 initNewEnv()
 proc processCurrentSourceFile*(): Value =
   var fl = getCurrentSourceFile()
+  var envPage = getCurrentEnv().page
   var parseRes = fl.parseMultiNode()
   prepareForNewModule()
   var evalRes = parseRes.evalMulti(getCurrentEnv())
-  
+  for kp in getCurrentExportList():
+    let name = kp[0]
+    let call = kp[1]
+    if not (name in envPage):
+      registerError(call.filename, call.line, call.col, "Name '" & name & "' not found in module")
   return evalRes
   
 proc readStr(p: File): Option[string] =

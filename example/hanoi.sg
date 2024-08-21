@@ -1,3 +1,5 @@
+(export hanoi)
+
 (def hanoi
   (fn (n from to via)
     (cond

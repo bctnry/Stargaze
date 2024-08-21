@@ -1,4 +1,5 @@
 import std/tables
+import std/options
 import defs
 
 let rootEnvTable: TableRef[string, Value] = newTable[string, Value]()
@@ -11,12 +12,28 @@ var currentEnv: Env = nil
 proc initNewEnv*(): void =
   currentEnv = newEnvFromRootEnv()
 proc getCurrentEnv*(): Env = currentEnv
-  
-var importList: seq[ImportDescriptor] = @[]
-var exportList: seq[string] = @[]
+proc setCurrentEnv*(e: Env): void = currentEnv = e
+
+# NOTE: the reason why it's (string, Node) is purely cosmetics; the
+# error msg generation down the line uses the metadata embedded in
+# the Node value.
+var exportList: seq[(string, Node)] = @[]
 proc prepareForNewModule*(): void =
-  importList = @[]
   exportList = @[]
-proc getCurrentImportList*(): seq[ImportDescriptor] = importList
-proc getCurrentExportList*(): seq[string] = exportList
+proc exportName*(x: string, call: Node): void =
+  exportList.add((x, call))
+proc getCurrentExportList*(): seq[(string, Node)] = exportList
+proc restoreCurrentExportList*(x: seq[(string, Node)]): void =
+  exportList = x
+
+var globalImportedModuleTable = newTable[string, (Env, seq[(string, Node)])]()
+proc registerImportedModule*(name: string, env: Env, exportList: seq[(string, Node)]): void =
+  globalImportedModuleTable[name] = (env, exportList)
+proc tryGetImportedModule*(name: string): Option[(Env, seq[(string, Node)])] =
+  if name in globalImportedModuleTable:
+    return some(globalImportedModuleTable[name])
+  else:
+    return none((Env, seq[(string, Node)]))
+    
+
 
