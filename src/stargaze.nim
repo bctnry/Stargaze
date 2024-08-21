@@ -15,13 +15,15 @@ import source
 import path
 import error
 
-var env = newEnvFromRootEnv()
-proc processCurrentSourceFile(): Value =
+initNewEnv()
+proc processCurrentSourceFile*(): Value =
   var fl = getCurrentSourceFile()
   var parseRes = fl.parseMultiNode()
-  var evalRes = parseRes.evalMulti(env)
+  prepareForNewModule()
+  var evalRes = parseRes.evalMulti(getCurrentEnv())
+  
   return evalRes
-
+  
 proc readStr(p: File): Option[string] =
   var res: string = ""
   try:

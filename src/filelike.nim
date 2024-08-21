@@ -1,6 +1,5 @@
 import std/syncio
 import std/options
-import std/unicode
 
 type
   FilelikeType* = enum

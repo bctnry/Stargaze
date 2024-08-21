@@ -2,10 +2,14 @@ import std/strutils
 import std/tables
 import std/sequtils
 import std/syncio
+import std/options
 import defs
 import core
 import session
 import error
+import path
+import source
+import parser
 
 proc errorWithReason(n: Node, x: string): void =
   n.registerError(x)
@@ -34,7 +38,7 @@ rootEnv.registerValue(
   )
 )
 
-# (def NAME BODY)
+# (def NAME BODY ...)
 rootEnv.registerValue(
   "def",
   mkPrimitiveValue(
@@ -544,9 +548,7 @@ rootEnv.registerValue(
   "int?",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x.len != 1:
-        call.registerError("Invalid format for 'int?'")
-        return nil
+      if x.len != 1: call.invalidFormErrorWithReason("int?")
       let r = x[0].evalSingle(e)
       return mkBoolValue(r != nil and r.vType == V_INTEGER)
   )
@@ -556,9 +558,7 @@ rootEnv.registerValue(
   "char?",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x.len != 1:
-        call.registerError("Invalid format for 'char?'")
-        return nil
+      if x.len != 1: call.invalidFormErrorWithReason("char?")
       let r = x[0].evalSingle(e)
       return mkBoolValue(r != nil and r.vType == V_CHAR)
   )
@@ -568,9 +568,7 @@ rootEnv.registerValue(
   "str?",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x.len != 1:
-        call.registerError("Invalid format for 'str?'")
-        return nil
+      if x.len != 1: call.invalidFormErrorWithReason("str?")
       let r = x[0].evalSingle(e)
       return mkBoolValue(r != nil and r.vType == V_STRING)
   )
@@ -580,9 +578,7 @@ rootEnv.registerValue(
   "sym?",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x.len != 1:
-        call.registerError("Invalid format for 'sym?'")
-        return nil
+      if x.len != 1: call.invalidFormErrorWithReason("sym?")
       let r = x[0].evalSingle(e)
       return mkBoolValue(r != nil and r.vType == V_SYMBOL)
   )
@@ -592,9 +588,7 @@ rootEnv.registerValue(
   "nil?",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x.len != 1:
-        call.registerError("Invalid format for 'nil?'")
-        return nil
+      if x.len != 1: call.invalidFormErrorWithReason("nil?")
       let r = x[0].evalSingle(e)
       return mkBoolValue(r == nil)
   )
@@ -604,9 +598,7 @@ rootEnv.registerValue(
   "eq",
   mkPrimitiveValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x.len != 2:
-        call.registerError("Invalid format for 'eq'")
-        return nil
+      if x.len != 2: call.invalidFormErrorWithReason("eq")
       let a = x[0].evalSingle(e)
       let b = x[1].evalSingle(e)
       if a == nil and b == nil: return mkBoolValue(true)
@@ -623,4 +615,24 @@ rootEnv.registerValue(
   )
 )
 
+rootEnv.registerValue(
+  "include",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("include")
+      let a = x[0].evalSingle(e)
+      if a.vType != V_STRING: call.typeErrorWithReason(V_STRING, 0, a.vType)
+      let fullPath = a.strVal.resolveModuleByName()
+      if fullPath.isNone():
+        call.errorWithReason("Cannot resolve module with name '" & a.strVal & "'")
+      useSourceFile(fullPath.get())
+      var fl = getCurrentSourceFile()
+      var parseRes = fl.parseMultiNode()
+      try:
+        var evalRes = parseRes.evalMulti(e)
+        return evalRes
+      except:
+        return nil
+  )
+)
 

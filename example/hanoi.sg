@@ -8,4 +8,4 @@
 	(print "From " from " to " to "\n")
 	(hanoi (sub n 1) via to from)))))
 (hanoi 3 "A" "C" "B")
-        
+

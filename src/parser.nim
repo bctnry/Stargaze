@@ -1,6 +1,5 @@
 import std/strutils
 import std/tables
-import std/sequtils
 import std/options
 import defs
 import filelike
@@ -82,7 +81,7 @@ proc takeWord(x: var Filelike): string =
   var s = ""
   while x.tryPeekChar().isSome():
     let ch = x.tryPeekChar().get()
-    if ch.isAlphaNumeric() or "#\\{}<>+=/%$^&*".contains(ch):
+    if ch.isAlphaNumeric() or "#\\{}<>+=/%$^&*@".contains(ch):
       s.add(ch)
       discard x.tryReadChar()
       continue
@@ -125,6 +124,7 @@ proc parseSingleNode*(x: var Filelike): Node =
     x.nextChar
     var res = mkListNode(lVal, tail)
     return res.withMetadata(line, col, fn)
+  #[
   elif firstChar == '\'':
     x.nextChar
     var res = mkWordNode("'")
@@ -141,6 +141,7 @@ proc parseSingleNode*(x: var Filelike): Node =
         resword = ",@"
     var res = mkWordNode(resword)
     return res.withMetadata(line, col, fn)
+  ]#
   elif firstChar.isDigit:
     var res = mkIntegerNode(x.takeInteger)
     return res.withMetadata(line, col, fn)

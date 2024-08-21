@@ -1,0 +1,4 @@
+(include "fac")
+(include "hanoi")
+
+(print (fac 6))
