@@ -85,7 +85,7 @@ proc takeWord(x: var Filelike): string =
     else:
       break
   return s
-
+      
 proc nextChar(x: var Filelike): void =
   discard x.tryReadChar()
 
@@ -93,6 +93,8 @@ proc nextCharExistsAndIs(x: var Filelike, c: char): bool =
   x.tryPeekChar().isSome() and x.tryPeekChar().get() == c
 proc nextCharExistsAndIsNot(x: var Filelike, c: char): bool =
   x.tryPeekChar().isSome() and x.tryPeekChar().get() != c
+proc nextCharExistsAndSatisfy(x: var Filelike, c: proc (c: char): bool): bool =
+  x.tryPeekChar().isSome() and c(x.tryPeekChar().get())
 
 proc recognizeCharLiteral1(x: string): Node
 proc recognizeCharLiteral2(hex: string): Node
@@ -140,7 +142,29 @@ proc parseSingleNode*(x: var Filelike): Node =
     return res.withMetadata(line, col, fn)
   ]#
   elif firstChar.isDigit:
-    var res = mkIntegerNode(x.takeInteger)
+    var s = ""
+    s.add(firstChar)
+    x.nextChar
+    # NOTE: For whatever reasons Nim 2.0.4 refuses to compile when isDigit is used directly.
+    var f = proc (ch: char): bool = ch.isDigit
+    while x.nextCharExistsAndSatisfy(f):
+      s.add(x.tryReadChar().get())
+    if not x.nextCharExistsAndSatisfy(proc (ch: char): bool = ".eE".contains(ch)):
+      var res = mkIntegerNode(s.parseInt)
+      return res.withMetadata(line, col, fn)
+    if x.nextCharExistsAndIs('.'):
+      s.add(x.tryReadChar().get())
+      while x.nextCharExistsAndSatisfy(f):
+        s.add(x.tryReadChar().get())
+    if not x.nextCharExistsAndIs('e') and not x.nextCharExistsAndIs('E'):
+      var res = mkFloatNode(s.parseFloat)
+      return res.withMetadata(line, col, fn)
+    s.add(x.tryReadChar().get())
+    if x.nextCharExistsAndIs('+') or x.nextCharExistsAndIs('-'):
+      s.add(x.tryReadChar().get())
+    while x.nextCharExistsAndSatisfy(f):
+      s.add(x.tryReadChar().get())
+    var res = mkFloatNode(s.parseFloat)
     return res.withMetadata(line, col, fn)
   elif firstChar == '"':
     var str = ""

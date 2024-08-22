@@ -8,6 +8,7 @@ type
   NodeType* = enum
     N_WORD
     N_INTEGER
+    N_FLOAT
     N_STRING
     N_CHAR
     N_LIST
@@ -22,6 +23,8 @@ type
       wVal*: string
     of N_INTEGER:
       iVal*: int
+    of N_FLOAT:
+      fVal*: float
     of N_STRING:
       strVal*: string
     of N_CHAR:
@@ -84,6 +87,8 @@ proc `$`*(x: Node): string =
       x.wVal
     of N_INTEGER:
       $x.iVal
+    of N_FLOAT:
+      $x.fVal
     of N_STRING:
       $x.strVal
     of N_CHAR:
@@ -107,6 +112,7 @@ proc `$`*(x: Node): string =
 
 proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_WORD, wVal: wVal)
 proc mkIntegerNode*(iVal: int): Node = Node(line: -1, col: -1, filename: "", nType: N_INTEGER, iVal: iVal)
+proc mkFloatNode*(fVal: float): Node = Node(line: -1, col: -1, filename: "", nType: N_FLOAT, fVal: fVal)
 proc mkCharNode*(chVal: char): Node = Node(line: -1, col: -1, filename: "", nType: N_CHAR, chVal: chVal)
 proc mkStrNode*(strVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_STRING, strVal: strVal)
 proc mkListNode*(lVal: seq[Node], tail: Node): Node = Node(line: -1, col: -1, filename: "", nType: N_LIST, lVal: lVal, tail: tail)
@@ -134,6 +140,7 @@ type
     parent*: Env
   ValueType* = enum
     V_INTEGER
+    V_FLOAT
     V_BOOL
     V_STRING
     V_CHAR
@@ -152,6 +159,8 @@ type
     case vType*: ValueType
     of V_INTEGER:
       iVal*: int
+    of V_FLOAT:
+      fVal*: float
     of V_BOOL:
       bVal*: bool
     of V_STRING:
@@ -188,6 +197,7 @@ type
 proc `$`*(vt: ValueType): string =
   case vt:
     of V_INTEGER: "INTEGER"
+    of V_FLOAT: "FLOAT"
     of V_BOOL: "BOOL"
     of V_STRING: "STRING"
     of V_CHAR: "CHAR"
@@ -205,6 +215,8 @@ proc `$`*(x: Value): string =
   case x.vType:
     of V_INTEGER:
       $x.iVal
+    of V_FLOAT:
+      $x.fVal
     of V_BOOL:
       if x.bVal:
         "#t"
@@ -271,6 +283,7 @@ proc registerValue*(e: Env, k: string, v: Value): void =
   e.page[k] = v
   
 proc mkIntegerValue*(iVal: int): Value = Value(vType: V_INTEGER, iVal: iVal)
+proc mkFloatValue*(fVal: float): Value = Value(vType: V_FLOAT, fVal: fVal)
 proc mkBoolValue*(bVal: bool): Value = Value(vType: V_BOOL, bVal: bVal)
 proc mkStrValue*(strVal: string): Value = Value(vType: V_STRING, strVal: strVal)
 proc mkCharValue*(chVal: char): Value = Value(vType: V_CHAR, chVal: chVal)
@@ -294,6 +307,7 @@ proc valueEqual*(a: Value, b: Value): bool =
   if a.vType != b.vType: return false
   case a.vType:
     of V_INTEGER: return a.iVal == b.iVal
+    of V_FLOAT: return a.fVal == b.fVal
     of V_BOOL: return a.bVal == b.bVal
     of V_STRING: return a.strVal == b.strVal
     of V_CHAR: return a.chVal == b.chVal

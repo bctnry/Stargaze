@@ -2,6 +2,8 @@ import std/tables
 import std/sequtils
 import std/syncio
 import std/options
+import std/strutils
+import std/math
 import defs
 import core
 import session
@@ -17,12 +19,24 @@ proc errorWithReason(n: Node, x: string): void =
 proc typeErrorWithReason(n: Node, req: ValueType, i: int, t: ValueType): void =
   n.errorWithReason("type error: " & $req & " required but " & $t & " found at argument no. " & $(i+1))
 
+proc typeErrorWithReason(n: Node, req: seq[ValueType], i: int, t: ValueType): void =
+  n.errorWithReason("type error: " & req.mapIt($it).join(" or ") & " required but " & $t & " found at argument no. " & $(i+1))
+
 proc invalidFormErrorWithReason(n: Node, name: string, requirement: string = ""): void =
   let tailstr = if requirement == "":
                   "'."
                 else:
                   "'; " & requirement & " required."
   n.errorWithReason("Invalid form for '" & name & tailstr)
+
+proc ensureArgOfType(n: Node, v: Value, i: int, t: ValueType): void =
+  if v.vType != t: n.typeErrorWithReason(t, i, v.vType)
+
+proc ensureArgOfType(n: Node, v: Value, i: int, t: seq[ValueType]): void =
+  if not t.contains(v.vType): n.typeErrorWithReason(t, i, v.vType)
+
+proc verdictValue(x: bool): Value =
+  if x: GlobalTrueValue else: GlobalFalseValue
 
 # (fn ARGLIST BODY)
 rootEnv.registerValue(
@@ -380,12 +394,48 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
       let kres1 = x[0].evalSingle(e)
       let kres2 = x[1].evalSingle(e)
-      if kres1.vType != V_INTEGER: call.typeErrorWithReason(V_INTEGER, 0, kres1.vType)
-      if kres2.vType != V_INTEGER: call.typeErrorWithReason(V_INTEGER, 1, kres2.vType)
-      return (if kres1.iVal <= kres2.iVal:
-                GlobalTrueValue
-              else:
-                GlobalFalseValue)
+      call.ensureArgOfType(kres1, 0, V_INTEGER)
+      call.ensureArgOfType(kres2, 1, V_INTEGER)
+      return (kres1.iVal <= kres2.iVal).verdictValue
+  )
+)
+rootEnv.registerValue(
+  "lt",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_INTEGER)
+      call.ensureArgOfType(kres2, 1, V_INTEGER)
+      return (kres1.iVal < kres2.iVal).verdictValue
+  )
+)
+rootEnv.registerValue(
+  "geq",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_INTEGER)
+      call.ensureArgOfType(kres2, 1, V_INTEGER)
+      return (kres1.iVal >= kres2.iVal).verdictValue
+  )
+)
+rootEnv.registerValue(
+  "gt",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_INTEGER)
+      call.ensureArgOfType(kres2, 1, V_INTEGER)
+      return (kres1.iVal > kres2.iVal).verdictValue
   )
 )
 
@@ -552,10 +602,7 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("int?")
       let r = x[0].evalSingle(e)
-      return (if r != nil and r.vType == V_INTEGER:
-                GlobalTrueValue
-              else:
-                GlobalFalseValue)
+      return (r != nil and r.vType == V_INTEGER).verdictValue
   )
 )
 
@@ -565,10 +612,7 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("char?")
       let r = x[0].evalSingle(e)
-      return (if r != nil and r.vType == V_CHAR:
-                GlobalTrueValue
-              else:
-                GlobalFalseValue)
+      return (r != nil and r.vType == V_CHAR).verdictValue
   )
 )
 
@@ -578,10 +622,7 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("str?")
       let r = x[0].evalSingle(e)
-      return (if r != nil and r.vType == V_STRING:
-                GlobalTrueValue
-              else:
-                GlobalFalseValue)
+      return (r != nil and r.vType == V_STRING).verdictValue
   )
 )
 
@@ -591,10 +632,7 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("sym?")
       let r = x[0].evalSingle(e)
-      return (if r != nil and r.vType == V_SYMBOL:
-                GlobalTrueValue
-              else:
-                GlobalFalseValue)
+      return (r != nil and r.vType == V_SYMBOL).verdictValue
   )
 )
 
@@ -604,10 +642,7 @@ rootEnv.registerValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("nil?")
       let r = x[0].evalSingle(e)
-      return (if r == nil:
-                GlobalTrueValue
-              else:
-                GlobalFalseValue)
+      return (r == nil).verdictValue
   )
 )
 
@@ -618,7 +653,7 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("eq")
       let a = x[0].evalSingle(e)
       let b = x[1].evalSingle(e)
-      return (if a.valueEqual(b): GlobalTrueValue else: GlobalFalseValue)
+      return (a.valueEqual(b)).verdictValue
   )
 )
 
@@ -1037,3 +1072,267 @@ rootEnv.registerValue("stdin", GlobalStdInValue)
 rootEnv.registerValue("stdout", GlobalStdOutValue)
 rootEnv.registervalue("stderr", GlobalStdErrValue)
 
+rootEnv.registerValue(
+  "addf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        if not t.isValueAList:
+          tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      var r: float = 0
+      var i = 0
+      let arglen = fullArgList.len
+      while i < arglen:
+        let k = fullArgList[i]
+        if k.vType != V_FLOAT:
+          call.typeErrorWithReason(V_FLOAT, i, k.vType)
+        r += k.fVal
+        i += 1
+      return mkFloatValue(r)
+  )
+)
+rootEnv.registerValue(
+  "mulf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        if not t.isValueAList:
+          tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      var r: float = 1
+      var i = 0
+      for k in fullArgList:
+        if k.vType != V_FLOAT:
+          call.typeErrorWithReason(V_FLOAT, i, k.vType)
+        r *= k.fVal
+        i += 1
+      return mkFloatValue(r)
+  )
+)
+rootEnv.registerValue(
+  "subf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen < 1: call.invalidFormErrorWithReason("subf", "at least 1 argument")
+      if fullArgList[0].vType != V_FLOAT:
+        call.typeErrorWithReason(V_FLOAT, 0, fullArgList[0].vType)
+      var r = fullArgList[0].fVal
+      var i = 1
+      while i < arglen:
+        if fullArgList[i].vType != V_FLOAT:
+          call.typeErrorWithReason(V_FLOAT, i, fullArgList[i].vType)
+        r -= fullArgList[i].fVal
+        i += 1
+      return mkFloatValue(r)
+  )
+)
+
+rootEnv.registerValue(
+  "divf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen < 1: call.invalidFormErrorWithReason("divf", "at least 1 argument")
+      if fullArgList[0].vType != V_FLOAT:
+        call.typeErrorWithReason(V_FLOAT, 0, fullArgList[0].vType)
+      var r = fullArgList[0].fVal
+      var i = 1
+      while i < arglen:
+        if fullArgList[i].vType != V_FLOAT:
+          call.typeErrorWithReason(V_FLOAT, i, fullArgList[i].vType)
+        r = r / fullArgList[i].fVal
+        i += 1
+      return mkFloatValue(r)
+  )
+)
+rootEnv.registerValue(
+  "float",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen != 1: call.invalidFormErrorWithReason("float", "1 argument")
+      call.ensureArgOfType(fullArgList[0], 0, @[V_FLOAT, V_INTEGER])
+      if fullArgList[0].vType == V_FLOAT: return fullArgList[0]
+      return mkFloatValue(fullArgList[0].iVal.float)
+  )
+)
+
+rootEnv.registerValue(
+  "floor",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen != 1: call.invalidFormErrorWithReason("floor", "1 argument")
+      call.ensureArgOfType(fullArgList[0], 0, @[V_FLOAT, V_INTEGER])
+      if fullArgList[0].vType == V_INTEGER: return fullArgList[0]
+      return mkIntegerValue(fullArgList[0].fVal.floor.int)
+  )
+)
+
+rootEnv.registerValue(
+  "ceil",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen != 1: call.invalidFormErrorWithReason("ceil", "1 argument")
+      call.ensureArgOfType(fullArgList[0], 0, @[V_FLOAT, V_INTEGER])
+      if fullArgList[0].vType == V_INTEGER: return fullArgList[0]
+      return mkIntegerValue(fullArgList[0].fVal.ceil.int)
+  )
+)
+
+rootEnv.registerValue(
+  "round",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen != 1: call.invalidFormErrorWithReason("round", "1 argument")
+      call.ensureArgOfType(fullArgList[0], 0, @[V_FLOAT, V_INTEGER])
+      if fullArgList[0].vType == V_INTEGER: return fullArgList[0]
+      return mkIntegerValue(fullArgList[0].fVal.round.int)
+  )
+)
+
+rootEnv.registerValue(
+  "trunc",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      if arglen != 1: call.invalidFormErrorWithReason("trunc", "1 argument")
+      call.ensureArgOfType(fullArgList[0], 0, @[V_INTEGER, V_FLOAT])
+      if fullArgList[0].vType == V_INTEGER: return fullArgList[0]
+      return mkIntegerValue(fullArgList[0].fVal.trunc.int)
+  )
+)
+
+rootEnv.registerValue(
+  "float?",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("int?")
+      let r = x[0].evalSingle(e)
+      return (r != nil and r.vType == V_FLOAT).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "eqnum",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      var fullArgList = x.mapIt(it.evalSingle(e))
+      if tail != nil:
+        let t = tail.evalSingle(e)
+        tail.errorWithReason("Must evaluate to a list to be arguments to a call")
+        fullArgList = fullArgList.concat(t.valueListToSeq)
+      let arglen = fullArgList.len
+      let arg = fullArgList
+      if arglen != 2: call.invalidFormErrorWithReason("eqnum", "1 argument")
+      call.ensureArgOfType(arg[0], 0, @[V_INTEGER, V_FLOAT])
+      call.ensureArgOfType(arg[1], 1, @[V_INTEGER, V_FLOAT])
+      if arg[0].vType == V_FLOAT or arg[1].vType == V_FLOAT:
+        let a = if arg[0].vType == V_INTEGER: arg[0].iVal.float else: arg[0].fVal
+        let b = if arg[1].vType == V_INTEGER: arg[1].iVal.float else: arg[1].fVal
+        return (a == b).verdictValue
+      else:
+        let a = arg[0].iVal
+        let b = arg[1].iVal
+        return (a == b).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "leqf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_FLOAT)
+      call.ensureArgOfType(kres2, 1, V_FLOAT)
+      return (kres1.fVal <= kres2.fVal).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "ltf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_FLOAT)
+      call.ensureArgOfType(kres2, 1, V_FLOAT)
+      return (kres1.fVal < kres2.fVal).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "geqf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_FLOAT)
+      call.ensureArgOfType(kres2, 1, V_FLOAT)
+      return (kres1.fVal >= kres2.fVal).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "gtf",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("leq")
+      if x.len != 2: call.invalidFormErrorWithReason("leq", "2 arguments")
+      let kres1 = x[0].evalSingle(e)
+      let kres2 = x[1].evalSingle(e)
+      call.ensureArgOfType(kres1, 0, V_FLOAT)
+      call.ensureArgOfType(kres2, 1, V_FLOAT)
+      return (kres1.fVal > kres2.fVal).verdictValue
+  )
+)

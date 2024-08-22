@@ -21,6 +21,8 @@ proc quoteAsValue*(x: Node): Value =
         mkSymbolValue(x.wVal)
     of N_INTEGER:
       mkIntegerValue(x.iVal)
+    of N_FLOAT:
+      mkFloatValue(x.fVal)
     of N_CHAR:
       mkCharValue(x.chVal)
     of N_STRING:
@@ -55,6 +57,8 @@ proc evalSingle*(x: Node, e: Env): Value =
           return c.get()
     of N_INTEGER:
       return mkIntegerValue(x.iVal)
+    of N_FLOAT:
+      return mkFloatValue(x.fVal)
     of N_CHAR:
       return mkCharValue(x.chVal)
     of N_STRING:

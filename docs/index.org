@@ -1,0 +1,29 @@
+#+options: toc:nil
+#+title: Stargaze
+
+A LISP dialect.
+
+** Build
+
+#+begin_src sh
+  nimble build -d:release
+#+end_src
+
+** Use
+
+#+begin_src
+Usage: stargaze [options] [file]
+stargaze         -    start repl.
+stargaze [file]  -    use [file] as input (but don't start repl)
+
+Options:
+    -v          -    show version.
+    -h          -    show help.
+    -i          -    start repl after the source file is processed.
+#+end_src
+
+** Document
+
+Please refer to [[./manual.org][the user manual]].
+
+

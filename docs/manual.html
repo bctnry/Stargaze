@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2024-08-22 Thu 14:05 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stargaze user manual</title>
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Stargaze user manual</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org77c9a0c">1. Lexical syntax</a>
+<ul>
+<li><a href="#org128bb05">1.1. Comment</a></li>
+<li><a href="#org2040d95">1.2. Booleans</a></li>
+<li><a href="#org43ae7bb">1.3. Strings</a></li>
+<li><a href="#org34cd360">1.4. Characters</a></li>
+<li><a href="#orgf828c5f">1.5. Vector</a></li>
+</ul>
+</li>
+<li><a href="#org7e4878d">2. Built-in primitives</a>
+<ul>
+<li><a href="#org44eb47f">2.1. Module-related</a></li>
+<li><a href="#orgefe2912">2.2. Miscellaneous</a></li>
+<li><a href="#org116434b">2.3. Integer</a></li>
+<li><a href="#orgfb210eb">2.4. Floating-point</a></li>
+<li><a href="#orgac999be">2.5. Pair</a></li>
+<li><a href="#orgdcb795b">2.6. Character</a></li>
+<li><a href="#org73a1bb3">2.7. String</a></li>
+<li><a href="#orgaa9fca2">2.8. Boolean</a></li>
+<li><a href="#orgf653ce8">2.9. Symbol</a></li>
+<li><a href="#orga397021">2.10. List</a></li>
+<li><a href="#org401fc05">2.11. Vector</a></li>
+<li><a href="#org4d3234d">2.12. File input/output</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<p>
+(very early draft)
+</p>
+
+
+<div id="outline-container-org77c9a0c" class="outline-2">
+<h2 id="org77c9a0c"><span class="section-number-2">1.</span> Lexical syntax</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org128bb05" class="outline-3">
+<h3 id="org128bb05"><span class="section-number-3">1.1.</span> Comment</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Comment in Stargaze starts with <code>;</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2040d95" class="outline-3">
+<h3 id="org2040d95"><span class="section-number-3">1.2.</span> Booleans</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Only the strings <code>#t</code> and <code>#f</code> are boolean values; they evaluate to true and false respectively.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org43ae7bb" class="outline-3">
+<h3 id="org43ae7bb"><span class="section-number-3">1.3.</span> Strings</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+There's only one kind of syntax for string literals: <code>"{string-piece}*"</code>, where <code>string-piece</code> is one of:
+</p>
+
+<ul class="org-ul">
+<li>Normal characters.</li>
+<li>Escape sequences, which starts with <code>\</code> and is of the following format:
+<ul class="org-ul">
+<li><code>\r</code>, <code>\n</code>, <code>\b</code>, <code>\t</code>, <code>\\</code>, <code>\"</code>, <code>\v</code>, <code>\f</code>, for carriage return, linefeed, backspace, horizontal tab, slash, double quote, vertical tab and form feed respectively.</li>
+<li><code>\xHEX</code>, where <code>HEX</code> is the codepoint of character in hexadecimal, e.g. <code>\x61</code> is the same as <code>a</code>.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org34cd360" class="outline-3">
+<h3 id="org34cd360"><span class="section-number-3">1.4.</span> Characters</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Two kinds of syntax for character literals:
+</p>
+
+<ul class="org-ul">
+<li><code>#\NAME</code> where <code>NAME</code> is the name for the character. <code>NAME</code> is often the character itself (e.g. <code>#\a</code> refers to the character <code>a</code>), but exceptions exist; see below.</li>
+<li><code>#ch{HEX}</code> where <code>HEX</code> is the codepoint in hexadecimal, e.g. <code>#ch{61}</code> is the same as <code>#\a</code>.</li>
+</ul>
+
+<p>
+As for the first kind, Scheme R4RS only explicitly declares a <code>#\space</code> and a <code>#\newline</code>. Stargaze (partly) follows <a href="https://groups.csail.mit.edu/mac/ftpdir/scheme-7.4/doc-html/scheme_6.html">the convention in MIT Scheme</a>, except that <code>#\newline</code> always corresponds to the ASCII LF regardless of the operating system. For this reason the following "character name"s are also defined in Stargaze:
+</p>
+
+<ul class="org-ul">
+<li><p>
+All of the standard ASCII names for non-printing characters are supported. They can be used by prefixing with <code>#\</code>, e.g. <code>#\NUL</code>:
+</p>
+<pre class="example">
+NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
+BS      HT      LF      VT      FF      CR      SO      SI
+DLE     DC1     DC2     DC3     DC4     NAK     SYN     ETB
+CAN     EM      SUB     ESC     FS      GS      RS      US
+DEL
+</pre></li>
+<li>A few other names are also defined:
+<ul class="org-ul">
+<li><code>#\esc</code>, for <code>#\ESC</code>. MIT Scheme used the string <code>#\altmode</code>, which we</li>
+<li><code>#\backspace</code> for <code>#\BS</code></li>
+<li><code>#\linefeed</code> for <code>#\LF</code> (also, as stated above, <code>#\newline</code>)</li>
+<li><code>#\tab</code> for <code>#\HT</code></li>
+<li><code>#\return</code> for <code>#\CR</code></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgf828c5f" class="outline-3">
+<h3 id="orgf828c5f"><span class="section-number-3">1.5.</span> Vector</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+Vector literals can be constructed by surrounding values with <code>#{</code> and <code>}</code>.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7e4878d" class="outline-2">
+<h2 id="org7e4878d"><span class="section-number-2">2.</span> Built-in primitives</h2>
+<div class="outline-text-2" id="text-2">
+<ul class="org-ul">
+<li><code>(def NAME BODY)</code>: Bind the value <code>BODY</code> to the name <code>NAME</code> in the current environment.</li>
+<li><code>(fn ARGLIST BODY)</code>: Anonymous function.</li>
+<li><code>(if COND THEN_CLAUSE ELSE_CLAUSE)</code>: Simple branching.</li>
+<li><code>(cond (COND1 CLAUSE1) ...)</code>: Multiway branching.</li>
+<li><code>(let ((NAME1 EXP1) ...) BODY ...)</code>: <code>let</code>-binding.</li>
+<li><code>(letrec ((NAME1 EXP1) ...) BODY ...)</code>: <code>letrec</code>-binding.</li>
+<li><code>(quote ...)</code>: Quote its argument as symbolic values</li>
+<li><code>(set! NAME VALUE)</code>: Assign <code>VALUE</code> to the name <code>NAME</code>.</li>
+</ul>
+</div>
+
+<div id="outline-container-org44eb47f" class="outline-3">
+<h3 id="org44eb47f"><span class="section-number-3">2.1.</span> Module-related</h3>
+<div class="outline-text-3" id="text-2-1">
+<ul class="org-ul">
+<li><code>(include STR)</code>: Include a file.</li>
+<li><code>(import MOD RENAME?)</code>:
+<ul class="org-ul">
+<li><code>MOD</code> can be one of two options:
+<ul class="org-ul">
+<li>A string, which refers to the module.</li>
+<li><code>(STR PREFIX)</code>, which prefix all exported name in <code>STR</code> with <code>PREFIX</code>.
+<ul class="org-ul">
+<li>e.g. assumes that <code>mymodule</code> exports <code>func1</code>, <code>func2</code> and <code>func3</code>; <code>(import ("mymodule" xyz))</code> would import <code>func1</code> as <code>xyzfunc1</code>, <code>func2</code> as <code>xyzfunc2</code>, <code>func3</code> as <code>xyzfunc3</code>.</li>
+</ul></li>
+</ul></li>
+<li><code>RENAME</code> is one of two followings:
+<ul class="org-ul">
+<li>Nothing, in which case the form would be <code>(import MOD)</code>; this would import <b>all</b> exported name in <code>MOD</code>.</li>
+<li>A list of <code>(NAME NEWNAME)</code>, which would only import the <b>exported</b> names described by <code>NAME</code>, which would bind to <code>NEWNAME</code> when importing. This renaming takes precedence over prefixes, so <code>(import ("abc" abc) (myfunc1 defmyfunc1))</code> would import <code>myfunc1</code> from module <code>"abc"</code> into <code>defmyfunc1</code> instead of <code>abcmyfunc1</code> or <code>abcdefmyfunc1</code>.</li>
+</ul></li>
+<li>Note that <code>(import MOD)</code> means import <b>all</b> names from <code>MOD</code>, while <code>(import MOD ())</code> means import all the exported names in <code>()</code>, which means none of the exported names.</li>
+</ul></li>
+</ul>
+<p>
+in the imported module; <code>NEW_NAME</code> would be the effective name in the <b>importing</b> module for <code>NAME</code> in the <b>imported</b> module.
+</p>
+<ul class="org-ul">
+<li><code>(export NAME ...)</code>: Export</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgefe2912" class="outline-3">
+<h3 id="orgefe2912"><span class="section-number-3">2.2.</span> Miscellaneous</h3>
+<div class="outline-text-3" id="text-2-2">
+<ul class="org-ul">
+<li><code>(atom? EXP)</code>: Check if <code>EXP</code> is an atom, i.e. a symbol, an integer, a boolean, a string, a character, or the empty list.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org116434b" class="outline-3">
+<h3 id="org116434b"><span class="section-number-3">2.3.</span> Integer</h3>
+<div class="outline-text-3" id="text-2-3">
+<ul class="org-ul">
+<li><code>(int? EXP)</code>: Check if <code>EXP</code> is an integer.</li>
+<li><code>(add EXP ...)</code>: Return the sum of the arguments.</li>
+<li><code>(sub EXP1 ...)</code>: Return <code>EXP1 - EXP2 - ...</code>.</li>
+<li><code>(mul EXP ...)</code>: Return the product of the arguments.</li>
+<li><code>(div EXP1 ...)</code>: Return <code>EXP1 div EXP2 div ...</code></li>
+<li><code>(mod EXP1 EXP2)</code>: Return <code>EXP1 % EXP2</code>.</li>
+<li><code>(leq EXP1 EXP2)</code>, <code>(lt EXP1 EXP2)</code>, <code>(geq EXP1 EXP2)</code>, <code>(gt EXP1 EXP2)</code>: Check if <code>EXP1</code> is smaller or equal than, strictly smaller than, greater or equal than, and strictly greater than <code>EXP2</code> respectively.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgfb210eb" class="outline-3">
+<h3 id="orgfb210eb"><span class="section-number-3">2.4.</span> Floating-point</h3>
+<div class="outline-text-3" id="text-2-4">
+<ul class="org-ul">
+<li><code>(float? EXP)</code>: Check if <code>EXP</code> is an integer.</li>
+<li><code>(addf EXP ...)</code>: Return the sum of the arguments.</li>
+<li><code>(subf EXP1 ...)</code>: Return <code>EXP1 - EXP2 - ...</code>.</li>
+<li><code>(mulf EXP ...)</code>: Return the product of the arguments.</li>
+<li><code>(divf EXP1 ...)</code>: Return <code>EXP1 div EXP2 div ...</code></li>
+<li><code>(float INT)</code>: Convert <code>INT</code> to a floating point number.
+<ul class="org-ul">
+<li>Returns the argument itself if it is already a floating-point number.</li>
+</ul></li>
+<li><code>(floor FLOAT)</code>, <code>(ceil FLOAT)</code>, <code>(round FLOAT)</code>, <code>(trunc FLOAT)</code>:
+<ul class="org-ul">
+<li><code>floor</code> returns the first integer that's smaller than or equal to its arugment.</li>
+<li><code>ceil</code> returns the first integer that's bigger than or equal to its argument.</li>
+<li><code>round</code> rounds its argument to the nearest integer.</li>
+<li><code>trunc</code> directly removes the decimal part.</li>
+<li>Returns the argument itself if it is already an integer.</li>
+</ul></li>
+<li><code>(leqf EXP1 EXP2)</code>, <code>(ltf EXP1 EXP2)</code>, <code>(geqf EXP1 EXP2)</code>, <code>(gtf EXP1 EXP2)</code>: Check if <code>EXP1</code> is smaller or equal than, strictly smaller than, greater or equal than, and strictly greater than <code>EXP2</code> respectively.</li>
+
+<li><code>(eqnum EXP1 EXP2)</code>: Return if <code>EXP1</code> and <code>EXP2</code> has the same numerical value.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgac999be" class="outline-3">
+<h3 id="orgac999be"><span class="section-number-3">2.5.</span> Pair</h3>
+<div class="outline-text-3" id="text-2-5">
+<ul class="org-ul">
+<li><code>(cons EXP1 EXP2)</code>: Return the pair of <code>EXP1</code> and <code>EXP2</code></li>
+<li><code>(car EXP1)</code>: Return the first component of the pair <code>EXP1</code>.</li>
+<li><code>(cdr EXP1)</code>: Return the second component of the pair <code>EXP2</code>.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgdcb795b" class="outline-3">
+<h3 id="orgdcb795b"><span class="section-number-3">2.6.</span> Character</h3>
+<div class="outline-text-3" id="text-2-6">
+<ul class="org-ul">
+<li><code>(chr INT)</code>: Convert <code>INT</code> into the corresponding character.</li>
+<li><code>(ord CHAR)</code>: Convert <code>CHAR</code> into the corresponding integer.</li>
+<li><code>(char? EXP)</code>: Check if <code>EXP</code> is a character.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org73a1bb3" class="outline-3">
+<h3 id="org73a1bb3"><span class="section-number-3">2.7.</span> String</h3>
+<div class="outline-text-3" id="text-2-7">
+<ul class="org-ul">
+<li><code>(strref STR I)</code>: Retrieve the <code>I</code>-th (starting from 0) character of the string <code>STR</code>.</li>
+<li><code>(substr STR START END?)</code>: Retrieve the substring of the string <code>STR</code> starting from index <code>START</code> to index <code>END</code>. <code>END</code> is optional; if it's not provided, this function takes the substring starting from index <code>START</code> to the end of the string.</li>
+<li><code>(strappend STR1 ...)</code>: Return the string appended together from its arguments.</li>
+<li><code>(strsym STR)</code>: Convert a string to a symbol.</li>
+<li><code>(str? EXP)</code>: Check if <code>EXP</code> is a string.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgaa9fca2" class="outline-3">
+<h3 id="orgaa9fca2"><span class="section-number-3">2.8.</span> Boolean</h3>
+<div class="outline-text-3" id="text-2-8">
+<ul class="org-ul">
+<li><code>(and EXP1 ...)</code>:</li>
+<li><code>(or EXP1 ...)</code>:</li>
+<li><code>(not EXP)</code>:</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgf653ce8" class="outline-3">
+<h3 id="orgf653ce8"><span class="section-number-3">2.9.</span> Symbol</h3>
+<div class="outline-text-3" id="text-2-9">
+<ul class="org-ul">
+<li><code>(symstr SYM)</code>: Convert a symbol to a string.</li>
+<li><code>(sym? EXP)</code>: Check if <code>EXP</code> is a symbol.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga397021" class="outline-3">
+<h3 id="orga397021"><span class="section-number-3">2.10.</span> List</h3>
+<div class="outline-text-3" id="text-2-10">
+<ul class="org-ul">
+<li><code>(list EXP1 ...)</code>: Combine its arguments into a list.</li>
+<li><code>(nil? EXP)</code>: Check if <code>EXP</code> is an empty list.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org401fc05" class="outline-3">
+<h3 id="org401fc05"><span class="section-number-3">2.11.</span> Vector</h3>
+<div class="outline-text-3" id="text-2-11">
+<ul class="org-ul">
+<li><code>(vec? EXP)</code>: Check if <code>EXP</code> is a vector.</li>
+<li><code>(vector EXP1 ...)</code>: Combine its arguments into a vector.</li>
+<li><code>(listvec LIST)</code>: Convert <code>LIST</code> into a vector.</li>
+<li><code>(veclist VEC)</code>: Conver <code>VEC</code> into a list</li>
+<li><code>(vecref VEC INT)</code>: Return the <code>INT</code>-th element from <code>VEC</code>.</li>
+<li><code>(mkvec INT)</code>: Create a vector of size <code>INT</code>.</li>
+<li><code>(vecset! VEC INT VALUE)</code>: Set the <code>INT</code>-th element of <code>VEC</code> to value <code>VALUE</code>.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org4d3234d" class="outline-3">
+<h3 id="org4d3234d"><span class="section-number-3">2.12.</span> File input/output</h3>
+<div class="outline-text-3" id="text-2-12">
+<ul class="org-ul">
+<li><code>stdin</code>, <code>stdout</code>, <code>stderr</code>: Standard input, standard output and standard error.</li>
+<li><code>(eof? EXP)</code>: Check if <code>EXP</code> is the EOF object.</li>
+<li><code>(openinput STR)</code>: Open file <code>STR</code> as input.</li>
+<li><code>(openoutput STR MODE?)</code>: Open file <code>STR</code> as output.
+<ul class="org-ul">
+<li>When <code>MODE</code> is not used (i.e. the form is <code>(openoutput STR)</code>), the file is opened for writing.</li>
+<li>When <code>MODE</code> is <code>"a"</code>, the file is opened for appending.</li>
+</ul></li>
+<li><code>(close FILE)</code>: Close a file.</li>
+<li><code>(readch FILE)</code>: Read a character from an input file.</li>
+<li><code>(writech FILE)</code>: Write a character to an output file.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2024-08-22 Thu 14:05</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

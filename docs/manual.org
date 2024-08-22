@@ -1,19 +1,19 @@
-* Stargaze user manual
+#+title: Stargaze user manual
 
 (very early draft)
 
 
-** Lexical syntax
+* Lexical syntax
 
-*** Comment
+** Comment
 
 Comment in Stargaze starts with =;=.
 
-*** Booleans
+** Booleans
 
 Only the strings =#t= and =#f= are boolean values; they evaluate to true and false respectively.
 
-*** Strings
+** Strings
 
 There's only one kind of syntax for string literals: ="{string-piece}*"=, where =string-piece= is one of:
 
@@ -22,7 +22,7 @@ There's only one kind of syntax for string literals: ="{string-piece}*"=, where 
   + =\r=, =\n=, =\b=, =\t=, =\\=, =\"=, =\v=, =\f=, for carriage return, linefeed, backspace, horizontal tab, slash, double quote, vertical tab and form feed respectively.
   + =\xHEX=, where =HEX= is the codepoint of character in hexadecimal, e.g. =\x61= is the same as =a=.
 
-*** Characters
+** Characters
 
 Two kinds of syntax for character literals:
 
@@ -46,11 +46,11 @@ As for the first kind, Scheme R4RS only explicitly declares a =#\space= and a =#
   + =#\tab= for =#\HT=
   + =#\return= for =#\CR=
 
-*** Vector
+** Vector
 
 Vector literals can be constructed by surrounding values with =#{= and =}=.
 
-** Language manual
+* Built-in primitives
 
 + =(def NAME BODY)=: Bind the value =BODY= to the name =NAME= in the current environment.
 + =(fn ARGLIST BODY)=: Anonymous function.
@@ -61,7 +61,7 @@ Vector literals can be constructed by surrounding values with =#{= and =}=.
 + =(quote ...)=: Quote its argument as symbolic values
 + =(set! NAME VALUE)=: Assign =VALUE= to the name =NAME=.
 
-*** Module-related
+** Module-related
 
 + =(include STR)=: Include a file.
 + =(import MOD RENAME?)=:
@@ -76,13 +76,11 @@ Vector literals can be constructed by surrounding values with =#{= and =}=.
 in the imported module; =NEW_NAME= would be the effective name in the *importing* module for =NAME= in the *imported* module.
 + =(export NAME ...)=: Export 
 
-** Standard library
-
-*** Miscellaneous
+** Miscellaneous
 
 + =(atom? EXP)=: Check if =EXP= is an atom, i.e. a symbol, an integer, a boolean, a string, a character, or the empty list.
 
-*** Integer
+** Integer
 
 + =(int? EXP)=: Check if =EXP= is an integer.
 + =(add EXP ...)=: Return the sum of the arguments.
@@ -90,20 +88,40 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(mul EXP ...)=: Return the product of the arguments.
 + =(div EXP1 ...)=: Return =EXP1 div EXP2 div ...=
 + =(mod EXP1 EXP2)=: Return =EXP1 % EXP2=.
++ =(leq EXP1 EXP2)=, =(lt EXP1 EXP2)=, =(geq EXP1 EXP2)=, =(gt EXP1 EXP2)=: Check if =EXP1= is smaller or equal than, strictly smaller than, greater or equal than, and strictly greater than =EXP2= respectively.
 
-*** Pair
+** Floating-point
+
++ =(float? EXP)=: Check if =EXP= is an integer.
++ =(addf EXP ...)=: Return the sum of the arguments.
++ =(subf EXP1 ...)=: Return =EXP1 - EXP2 - ...=.
++ =(mulf EXP ...)=: Return the product of the arguments.
++ =(divf EXP1 ...)=: Return =EXP1 div EXP2 div ...=
++ =(float INT)=: Convert =INT= to a floating point number.
+  + Returns the argument itself if it is already a floating-point number.
++ =(floor FLOAT)=, =(ceil FLOAT)=, =(round FLOAT)=, =(trunc FLOAT)=:
+  + =floor= returns the first integer that's smaller than or equal to its arugment.
+  + =ceil= returns the first integer that's bigger than or equal to its argument.
+  + =round= rounds its argument to the nearest integer.
+  + =trunc= directly removes the decimal part.
+  + Returns the argument itself if it is already an integer.
++ =(leqf EXP1 EXP2)=, =(ltf EXP1 EXP2)=, =(geqf EXP1 EXP2)=, =(gtf EXP1 EXP2)=: Check if =EXP1= is smaller or equal than, strictly smaller than, greater or equal than, and strictly greater than =EXP2= respectively.
+
++ =(eqnum EXP1 EXP2)=: Return if =EXP1= and =EXP2= has the same numerical value.
+  
+** Pair
 
 + =(cons EXP1 EXP2)=: Return the pair of =EXP1= and =EXP2=
 + =(car EXP1)=: Return the first component of the pair =EXP1=.
 + =(cdr EXP1)=: Return the second component of the pair =EXP2=.
   
-*** Character
+** Character
 
 + =(chr INT)=: Convert =INT= into the corresponding character.
 + =(ord CHAR)=: Convert =CHAR= into the corresponding integer.
 + =(char? EXP)=: Check if =EXP= is a character.
 
-*** String
+** String
 
 + =(strref STR I)=: Retrieve the =I=-th (starting from 0) character of the string =STR=.
 + =(substr STR START END?)=: Retrieve the substring of the string =STR= starting from index =START= to index =END=. =END= is optional; if it's not provided, this function takes the substring starting from index =START= to the end of the string.
@@ -111,23 +129,23 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(strsym STR)=: Convert a string to a symbol.
 + =(str? EXP)=: Check if =EXP= is a string.
 
-*** Boolean
+** Boolean
 
 + =(and EXP1 ...)=:
 + =(or EXP1 ...)=:
 + =(not EXP)=:
 
-*** Symbol
+** Symbol
 
 + =(symstr SYM)=: Convert a symbol to a string.
 + =(sym? EXP)=: Check if =EXP= is a symbol.
 
-*** List
+** List
 
 + =(list EXP1 ...)=: Combine its arguments into a list.
 + =(nil? EXP)=: Check if =EXP= is an empty list.
 
-*** Vector
+** Vector
 
 + =(vec? EXP)=: Check if =EXP= is a vector.
 + =(vector EXP1 ...)=: Combine its arguments into a vector.
@@ -137,7 +155,7 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(mkvec INT)=: Create a vector of size =INT=.
 + =(vecset! VEC INT VALUE)=: Set the =INT=-th element of =VEC= to value =VALUE=.
   
-*** File input/output
+** File input/output
 
 + =stdin=, =stdout=, =stderr=: Standard input, standard output and standard error.
 + =(eof? EXP)=: Check if =EXP= is the EOF object.
