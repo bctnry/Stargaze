@@ -60,6 +60,7 @@ Vector literals can be constructed by surrounding values with =#{= and =}=.
 + =(letrec ((NAME1 EXP1) ...) BODY ...)=: =letrec=-binding.
 + =(quote ...)=: Quote its argument as symbolic values
 + =(set! NAME VALUE)=: Assign =VALUE= to the name =NAME=.
++ =(begin EXP1 ...)=: Executes =EXP1= and the rest in the order they appear in the argument list. Returns the evaluated value of the last argument..
 
 ** Module-related
 
@@ -167,3 +168,9 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(readch FILE)=: Read a character from an input file.
 + =(writech FILE)=: Write a character to an output file.
   
+** Iteration
+
+Iteration is important (at least for now) since we don't have tail-call optimization.
+
++ =(while COND BODY)=: Repeatedly execute =BODY= until =COND= evaluates to false. Returns nil.
+

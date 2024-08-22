@@ -337,6 +337,9 @@ proc isValueAList*(x: Value): bool =
     if subj != nil and subj.vType != V_PAIR: return false
     if subj == nil: return true
     subj = subj.cdr
+
+proc isValueNotFalse*(x: Value): bool =
+  not (x.vType == V_BOOL and x.bVal == false)
     
 proc valueListToSeq*(x: Value): seq[Value] =
   assert x.isValueAList

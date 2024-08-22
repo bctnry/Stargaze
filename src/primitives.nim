@@ -1336,3 +1336,27 @@ rootEnv.registerValue(
       return (kres1.fVal > kres2.fVal).verdictValue
   )
 )
+
+rootEnv.registerValue(
+  "begin",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("while")
+      return x.evalMulti(e)
+  )
+)
+
+rootEnv.registerValue(
+  "while",
+  mkPrimitiveValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("while")
+      if x.len != 2: call.invalidFormErrorWithReason("while", "2 arguments")
+      let cond = x[0]
+      let body = x[1]
+      while cond.evalSingle(e).isValueNotFalse():
+        discard body.evalSingle(e)
+      return nil
+  )
+)
+
