@@ -3,6 +3,10 @@
 
 A LISP dialect.
 
+** Download
+
+Visit the code repository on GitHub [[https://github.com/bctnry/Stargaze][here]].
+
 ** Build
 
 #+begin_src sh
