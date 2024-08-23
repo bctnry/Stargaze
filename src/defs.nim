@@ -146,6 +146,7 @@ type
     V_CHAR
     V_CLOSURE
     V_PRIMITIVE
+    V_SPECIAL_FORM
     V_SYMBOL
     V_PAIR
     V_VECTOR
@@ -177,7 +178,9 @@ type
       cvararg*: string
       cbody*: seq[Node]
     of V_PRIMITIVE:
-      pbody*: proc (args: seq[Node], tail: Node, e: Env, call: Node): Value
+      pbody*: proc (args: seq[Value], e: Env, call: Node): Value
+    of V_SPECIAL_FORM:
+      sfbody*: proc (args: seq[Node], tail: Node, e: Env, call: Node): Value
     of V_SYMBOL:
       sVal*: string
     of V_PAIR:
@@ -203,6 +206,7 @@ proc `$`*(vt: ValueType): string =
     of V_CHAR: "CHAR"
     of V_CLOSURE: "CLOSURE"
     of V_PRIMITIVE: "PRIMITIVE"
+    of V_SPECIAL_FORM: "SPECIAL_FORM"
     of V_PAIR: "PAIR"
     of V_SYMBOL: "SYMBOL"
     of V_VECTOR: "VECTOR"
@@ -235,6 +239,8 @@ proc `$`*(x: Value): string =
       "<CLOSURE>"
     of V_PRIMITIVE:
       "<PRIMITIVE>"
+    of V_SPECIAL_FORM:
+      "<SPECIAL_FORM>"
     of V_SYMBOL:
       x.sVal
     of V_PAIR:
@@ -288,7 +294,8 @@ proc mkBoolValue*(bVal: bool): Value = Value(vType: V_BOOL, bVal: bVal)
 proc mkStrValue*(strVal: string): Value = Value(vType: V_STRING, strVal: strVal)
 proc mkCharValue*(chVal: char): Value = Value(vType: V_CHAR, chVal: chVal)
 proc mkClosureValue*(cenv: Env, carglist: seq[string], cvararg: string, cbody: seq[Node]): Value = Value(vType: V_CLOSURE, cenv: cenv, carglist: carglist, cvararg: cvararg, cbody: cbody)
-proc mkPrimitiveValue*(pbody: proc (x: seq[Node], tail: Node, e: Env, call: Node): Value): Value = Value(vType: V_PRIMITIVE, pbody: pbody)
+proc mkPrimitiveValue*(pbody: proc (x: seq[Value], e: Env, call: Node): Value): Value = Value(vType: V_PRIMITIVE, pbody: pbody)
+proc mkSpecialFormValue*(sfbody: proc (x: seq[Node], tail: Node, e: Env, call: Node): Value): Value = Value(vType: V_SPECIAL_FORM, sfbody: sfbody)
 proc mkSymbolValue*(sVal: string): Value = Value(vType: V_SYMBOL, sVal: sVal)
 proc mkPairValue*(car: Value, cdr: Value): Value = Value(vType: V_PAIR, car: car, cdr: cdr)
 proc mkVectorValue*(vVal: seq[Value]): Value = Value(vType: V_VECTOR, vVal: vVal)

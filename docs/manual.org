@@ -115,6 +115,10 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(cons EXP1 EXP2)=: Return the pair of =EXP1= and =EXP2=
 + =(car EXP1)=: Return the first component of the pair =EXP1=.
 + =(cdr EXP1)=: Return the second component of the pair =EXP2=.
++ =(set-car! EXP NEWCAR)=: Set the first component of =EXP= to =NEWCAR=.
++ =(set-cdr! EXP NEWCDR)=: Set the second component of =EXP= to =NEWCAR=.
++ =(w/car EXP NEWCAR)=: Equivalent to =(cons NEWCAR (cdr EXP))=.
++ =(w/cdr EXP NEWCDR)=: Equivalent to =(cons (car EXP) NEWCDR)=.
   
 ** Character
 
@@ -155,6 +159,8 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(vecref VEC INT)=: Return the =INT=-th element from =VEC=.
 + =(mkvec INT)=: Create a vector of size =INT=.
 + =(vecset! VEC INT VALUE)=: Set the =INT=-th element of =VEC= to value =VALUE=.
++ =(vec++ EXP1 ...)=:
++ =(veclen VECTOR)=:
   
 ** File input/output
 
@@ -173,4 +179,56 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 Iteration is important (at least for now) since we don't have tail-call optimization.
 
 + =(while COND BODY)=: Repeatedly execute =BODY= until =COND= evaluates to false. Returns nil.
+
+* Extended primitives
+
+A few functions that should be able to be defined using the language itself is defined as primitives for performance, even if there aren't much performance to begin with...
+
+** List libraries
+
++ =(length LIST)=: Return the length of =LIST=.
++ =(append EXP ...)= / =(list++ EXP ...)=: Combines =EXP= and the rest into one list.
++ =(reverse LIST)=: Return a reversed version of =LIST=.
++ =map=:
++ =filter=:
++ =member=:
++ =assoc=:
+
+** COMMENT Bitwise operations
+
++ =(bit~ INT)=: Bitwise not.
++ =(bit& INT INT)=: Bitwise and.
++ =(bit^ INT INT)=: Bitwise xor.
++ =(bit| INT INT)=: Bitwise or.
++ =(bit<< INT INT)=: Left shift.
++ =(bit>> INT INT)=: Right shift.
++ =(biti>> INT INT)=: Algorithmic right shift.
+
+** COMMENT Vector operations
+
+
+** COMMENT String operations
+
++ =(mkstr N CHAR)=:
++ =(strlen STR)=:
++ =(strlist STR)=: Convert a string to a list of characters.
++ =(strvec STR)=: Convert a string to a vector of characters.
++ =(str++ STR1 ...)=: Equivalent to =strappend=.
+
+** COMMENT Generators
+
+A generator is simply a function that takes no argument and returns a value when called. There are two types of generators: finite and infinite. Generators should return the EOF object when ending.
+
++ =(generator EXP1 ...)=:
++ =(circular-generator EXP1 ...)=:
++ =(mk-iota-generator )=
++ =(mk-range-generator )=
++ =(gfrom/list LIST)=:
++ =(gfrom/vec LIST)=:
++ =(gfrom/str LIST)=:
++ =(gfrom/reverse-vec LIST)=:
++ =(gcons )=
++ =(gappend )=
++ =(gfilter )=
+  
 

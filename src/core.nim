@@ -40,7 +40,8 @@ proc quoteAsValue*(x: Node): Value =
       GlobalEOFValue
 
 proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
-proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value
+proc applyPrimitive*(x: Value, arglist: seq[Value], e: Env, call: Node): Value
+proc applySpecialForm*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value
 proc evalSingle*(x: Node, e: Env): Value =
   if x == nil: return nil
   case x.nType:
@@ -75,7 +76,13 @@ proc evalSingle*(x: Node, e: Env): Value =
         of V_CLOSURE:
           return applyClosure(head, el.mapIt(it.evalSingle(e)), etail.evalSingle(e), e)
         of V_PRIMITIVE:
-          return applyPrimitive(head, el, etail, e, x)
+          let a = el.mapIt(it.evalSingle(e))
+          let b = etail.evalSingle(e)
+          if not b.isValueAList():
+            x.errorWithReason("Cannot use a non-LIST value as the tail argument")
+          return applyPrimitive(head, a.concat(b.valueListToSeq()), e, x)
+        of V_SPECIAL_FORM:
+          return applySpecialForm(head, el, etail, e, x)
         else:
           x.errorWithReason("Cannot apply '" & $head & "' as a function")
     of N_VECTOR:
@@ -126,7 +133,11 @@ proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
   newEnvPage[x.cvararg] = restargs.seqToValueList
   return x.cbody.evalMulti(mkEnv(newEnvPage, x.cenv))
 
-proc applyPrimitive*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value =
+proc applyPrimitive*(x: Value, arglist: seq[Value], e: Env, call: Node): Value =
   assert x.vType == V_PRIMITIVE
-  return x.pbody(arglist, argtail, e, call)
+  return x.pbody(arglist, e, call)
+
+proc applySpecialForm*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value =
+  assert x.vType == V_SPECIAL_FORM
+  return x.sfbody(arglist, argtail, e, call)
   
