@@ -42,6 +42,10 @@ proc quoteAsValue*(x: Node): Value =
 proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value
 proc applyPrimitive*(x: Value, arglist: seq[Value], e: Env, call: Node): Value
 proc applySpecialForm*(x: Value, arglist: seq[Node], argtail: Node, e: Env, call: Node): Value
+proc quoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value
+proc qquoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value
+proc unquoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value
+proc fnF (x: seq[Node], tail: Node, e: Env, call: Node): Value
 proc evalSingle*(x: Node, e: Env): Value =
   if x == nil: return nil
   case x.nType:
@@ -67,11 +71,15 @@ proc evalSingle*(x: Node, e: Env): Value =
     of N_LIST:
       if x.lVal.len <= 0:
         x.errorWithReason("Invalid syntax for call")
+      var el: seq[Node] = x.lVal[1..<x.lVal.len]
+      var etail: Node = x.tail
+      if x.lVal[0].isWordNodeOf("fn"): return fnF(el, etail, e, x)
+      elif x.lVal[0].isWordNodeOf("quote"): return quoteF(el, etail, e, x)
+      elif x.lVal[0].isWordNodeOf("qquote"): return qquoteF(el, etail, e, x)
+      elif x.lVal[0].isWordNodeOf("unquote"): return unquoteF(el, etail, e, x)
       var head = x.lVal[0].evalSingle(e)
       if head == nil:
         x.errorWithReason("Cannot call value '" & $x.lVal[0] & "'")
-      var el: seq[Node] = x.lVal[1..<x.lVal.len]
-      var etail: Node = x.tail
       case head.vType:
         of V_CLOSURE:
           return applyClosure(head, el.mapIt(it.evalSingle(e)), etail.evalSingle(e), e)
@@ -89,15 +97,22 @@ proc evalSingle*(x: Node, e: Env): Value =
       return mkVectorValue(x.vVal.mapIt(it.evalSingle(e)))
     of N_EOF:
       return GlobalEOFValue
+          
 proc evalMulti*(x: seq[Node], e: Env): Value =
   var last: Value = nil
   for k in x:
     last = k.evalSingle(e)
   return last
 
-proc isWordNodeOf(n: Node, x: string): bool =
-  n.nType == N_WORD and n.wVal == x
-
+proc invalidFormErrorWithReason*(n: Node, name: string, requirement: string = ""): void =
+  let tailstr = if requirement == "":
+                  "'."
+                else:
+                  "'; " & requirement & " required."
+  n.errorWithReason("Invalid form for '" & name & tailstr)
+# NOTE: these names are the names that should not be overridden in anyway.
+# these names includes: fn, quote, unquote, qquote
+# (fn ARGLIST BODY)
 proc mkClosureBase*(argNode: Node, bodyNodeList: seq[Node]): Value =
   ## returns a closure "base" with no env reference.
   var carglist: seq[string] = @[]
@@ -114,6 +129,60 @@ proc mkClosureBase*(argNode: Node, bodyNodeList: seq[Node]): Value =
                 ""
   else: argNode.errorWithReason("Invalid grammar for closure")
   return mkClosureValue(nil, carglist, cvararg, bodyNodeList)
+proc fnF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+  if tail != nil: tail.invalidFormErrorWithReason("fn")
+  if x.len < 2: call.invalidFormErrorWithReason("fn")
+  let r = mkClosureBase(x[0], x[1..<x.len])
+  r.cenv = e
+  return r
+proc quoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+  if tail != nil: tail.invalidFormErrorWithReason("quote")
+  if x.len != 1: call.invalidFormErrorWithReason("quote")
+  return x[0].quoteAsValue
+# NOTE: unquote should only be expanded under a qquote context, which
+#       is handled separately.
+proc unquoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+  call.errorWithReason("Invalid unquote under current context")
+proc evalQuasiQuoteContext(n: Node, e: Env): Value =
+  if n == nil: return nil
+  case n.nType:
+    of N_LIST:
+      if n.lVal.len >= 1:
+        let head = n.lVal[0]
+        if head.isWordNodeOf("unquote"):
+          if n.lVal.len != 2 or n.tail != nil: head.invalidFormErrorWithReason("unquote")
+          let arg = n.lVal[1]
+          return arg.evalSingle(e)
+        elif head.isWordNodeOf("quote") or head.isWordNodeOf("qquote"):
+          return n.quoteAsValue()
+        else:
+          let listval = n.lVal.mapIt(it.evalQuasiQuoteContext(e))
+          let tailval = n.tail.evalQuasiQuoteContext(e)
+          var r = tailval
+          var i = listval.len - 1
+          while i >= 0:
+            r = mkPairValue(listval[i], r)
+            i -= 1
+          return r
+      else:
+        if n.tail != nil:
+          # this is where cases like "( . 3)" reach.
+          n.invalidFormErrorWithReason("qquote")
+        else:
+          # this is where the empty list reach.
+          return nil
+    of N_VECTOR:
+      return mkVectorValue(n.vVal.mapIt(it.evalQuasiQuoteContext(e)))
+    else:
+      return n.quoteAsValue()
+proc qquoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+  if tail != nil: call.invalidFormErrorWithReason("qquote")
+  if x.len != 1: call.invalidFormErrorWithReason("qquote", "1 argument")
+  return x[0].evalQuasiQuoteContext(e)
+
+  
+proc isWordNodeOf(n: Node, x: string): bool =
+  n.nType == N_WORD and n.wVal == x
 
 proc applyClosure*(x: Value, arglist: seq[Value], argtail: Value, e: Env): Value =
   assert x.vType == V_CLOSURE

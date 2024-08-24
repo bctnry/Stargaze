@@ -123,14 +123,15 @@ proc parseSingleNode*(x: var Filelike): Node =
     x.nextChar
     var res = mkListNode(lVal, tail)
     return res.withMetadata(line, col, fn)
-  #[
   elif firstChar == '\'':
     x.nextChar
-    var res = mkWordNode("'")
+    var preres = x.parseSingleNode()
+    var res = mkListNode(@[mkWordNode("quote"), preres], nil)
     return res.withMetadata(line, col, fn)
   elif firstChar == '`':
     x.nextChar
-    var res = mkWordNode("`")
+    var preres = x.parseSingleNode()
+    var res = mkListNode(@[mkWordNode("qquote"), preres], nil)
     return res.withMetadata(line, col, fn)
   elif firstChar == ',':
     x.nextChar
@@ -138,9 +139,12 @@ proc parseSingleNode*(x: var Filelike): Node =
     if not x.textEnded and x.nextCharExistsAndIs('@'):
         x.nextChar
         resword = ",@"
-    var res = mkWordNode(resword)
+    var preres = x.parseSingleNode()
+    var res = mkListNode(@[mkWordNode(if resword == ",":
+                                        "unquote"
+                                      else:
+                                        "unquotex"), preres], nil)
     return res.withMetadata(line, col, fn)
-  ]#
   elif firstChar.isDigit:
     var s = ""
     s.add(firstChar)

@@ -108,7 +108,6 @@ proc `$`*(x: Node): string =
       "#{" & x.vVal.mapIt($it).join(" ") & "}"
     of N_EOF:
       "#eof"
-       
 
 proc mkWordNode*(wVal: string): Node = Node(line: -1, col: -1, filename: "", nType: N_WORD, wVal: wVal)
 proc mkIntegerNode*(iVal: int): Node = Node(line: -1, col: -1, filename: "", nType: N_INTEGER, iVal: iVal)
@@ -130,6 +129,9 @@ proc withMetadata*(n: var Node, line: int, col: int, filename: string): Node =
   n.col = col
   n.filename = filename
   return n
+
+proc isWordNodeOf*(n: Node, w: string): bool =
+  n.nType == N_WORD and n.wVal == w
       
 type
   # the reason why seq is not suitable here is that in the most direct style

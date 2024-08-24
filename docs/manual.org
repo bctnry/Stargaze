@@ -50,6 +50,16 @@ As for the first kind, Scheme R4RS only explicitly declares a =#\space= and a =#
 
 Vector literals can be constructed by surrounding values with =#{= and =}=.
 
+** Quotes
+
+Four kinds of quote exists in Stargaze:
+
++ =quote= / ='= , which turns whatever it prefixed into "the thing itself"; e.g. =(if #t 3 4)= evaluates to =3= but ='(if #t 3 4)= evaluates to =(if #t 3 4)= (that is, a list containing =if=, =#t=, =3= and =4=.)
++ =qquote= / =`= , which works like normal quote, but any of the sub-expression within can be "unquoted" and thus get evaluated like normal.
++ =unquote= / =,= , which evaluates whatever it prefixed within a =quasiquote=-ed context. e.g. =`(if (leq 3 4) 3 4)= evaluates to =(if (leq 3 4) 3 4)= but =`(if ,(leq 3 4) 3 4)= evaluates to =(if #t 3 4)=.
+
+These quotes are equivalent to their s-expr counterparts at all time, e.g. =''a= would be equivalent to =(quote (quote a))= which would evaluates to =(quote a)= (which also means that =(list? ''a)= would evaluate to =#t=.)
+
 * Built-in primitives
 
 + =(def NAME BODY)=: Bind the value =BODY= to the name =NAME= in the current environment.
@@ -61,6 +71,7 @@ Vector literals can be constructed by surrounding values with =#{= and =}=.
 + =(quote ...)=: Quote its argument as symbolic values
 + =(set! NAME VALUE)=: Assign =VALUE= to the name =NAME=.
 + =(begin EXP1 ...)=: Executes =EXP1= and the rest in the order they appear in the argument list. Returns the evaluated value of the last argument..
++ =(equal EXP1 EXP2)=: Check if =EXP1= and =EXP2= has the same value.
 
 ** Module-related
 
@@ -136,9 +147,9 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 
 ** Boolean
 
-+ =(and EXP1 ...)=:
-+ =(or EXP1 ...)=:
-+ =(not EXP)=:
++ =(and EXP1 ...)=: Returns =#f= if one of the =EXP= evalueates to =#f=, or else returns the last argument.
++ =(or EXP1 ...)=: Returns the first value that is not =#f= (if any); or else, returns =#f=.
++ =(not EXP)=: If =EXP= evaluates to =#f= then return =#t=; returns =#f= otherwise.
 
 ** Symbol
 
@@ -189,10 +200,10 @@ A few functions that should be able to be defined using the language itself is d
 + =(length LIST)=: Return the length of =LIST=.
 + =(append EXP ...)= / =(list++ EXP ...)=: Combines =EXP= and the rest into one list.
 + =(reverse LIST)=: Return a reversed version of =LIST=.
-+ =map=:
-+ =filter=:
-+ =member=:
-+ =assoc=:
++ =(map F LIST1 ...)=: Returns a new list whose members are the results of applying =F= on =LIST1= and the rest, e.g. =(map add (list 3 4) (list 5 6) (list 7 8))= is equivalent to =(list (add 3 5 7) (add 4 6 8))=.
++ =(filter F LIST)=: Returns *a new list* consisting of all the members of =LIST= that satisfies =F=. =F= should be a function that takes 1 argument and returns a boolean.
++ =(member EXP LIST)=: Check if =EXP= is in the list =LIST=. If it is, returns the part of =LIST= starting from =EXP=; if not, return the false value.
++ =(assoc EXP LIST)=: Check if =EXP= is in the assoc list =LIST=. An assoc list in LISP-like languages is a kind of list that consists of key-value pairs. If there is a key-value pair that uses =EXP= as the key, this primitive will return that key-value pair; or else, it will return the false value.
 
 ** COMMENT Bitwise operations
 

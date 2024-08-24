@@ -22,13 +22,6 @@ proc typeErrorWithReason(n: Node, req: ValueType, i: int, t: ValueType): void =
 proc typeErrorWithReason(n: Node, req: seq[ValueType], i: int, t: ValueType): void =
   n.errorWithReason("type error: " & req.mapIt($it).join(" or ") & " required but " & $t & " found at argument no. " & $(i+1))
 
-proc invalidFormErrorWithReason(n: Node, name: string, requirement: string = ""): void =
-  let tailstr = if requirement == "":
-                  "'."
-                else:
-                  "'; " & requirement & " required."
-  n.errorWithReason("Invalid form for '" & name & tailstr)
-
 proc ensureArgOfType(n: Node, v: Value, i: int, t: ValueType): void =
   if v.vType != t: n.typeErrorWithReason(t, i, v.vType)
 
@@ -37,19 +30,6 @@ proc ensureArgOfType(n: Node, v: Value, i: int, t: seq[ValueType]): void =
 
 proc verdictValue(x: bool): Value =
   if x: GlobalTrueValue else: GlobalFalseValue
-
-# (fn ARGLIST BODY)
-rootEnv.registerValue(
-  "fn",
-  mkSpecialFormValue(
-    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if tail != nil: tail.invalidFormErrorWithReason("fn")
-      if x.len < 2: call.invalidFormErrorWithReason("fn")
-      let r = mkClosureBase(x[0], x[1..<x.len])
-      r.cenv = e
-      return r
-  )
-)
 
 # (def NAME BODY ...)
 rootEnv.registerValue(
@@ -235,16 +215,6 @@ rootEnv.registerValue(
         let kval = k.lVal[1].evalSingle(newEnv)
         newPage[kname] = kval
       return body.evalMulti(newEnv)
-  )
-)
-
-rootEnv.registerValue(
-  "quote",
-  mkSpecialFormValue(
-    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if tail != nil: tail.invalidFormErrorWithReason("quote")
-      if x.len != 1: call.invalidFormErrorWithReason("quote")
-      return x[0].quoteAsValue
   )
 )
 
@@ -531,7 +501,7 @@ rootEnv.registerValue(
   "equal",
   mkPrimitiveValue(
     proc (x: seq[Value], e: Env, call: Node): Value =
-      if x.len != 2: call.invalidFormErrorWithReason("eq")
+      if x.len != 2: call.invalidFormErrorWithReason("equal")
       let a = x[0]
       let b = x[1]
       return (a.valueEqual(b)).verdictValue
@@ -1153,5 +1123,84 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("w/cdr", "2 argument")
       call.ensureArgOfType(x[0], 0, V_PAIR)
       return mkPairValue(x[0].car, x[1])
+  )
+)
+
+rootEnv.registerValue(
+  "map",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len < 2: call.invalidFormErrorWithReason("map", "at least 2 argument")
+      call.ensureArgOfType(x[0], 0, @[V_CLOSURE, V_PRIMITIVE])
+      var arghead: seq[Value] = x[1..<x.len]
+      var resseq: seq[Value] = @[]
+      block l1:
+        while true:
+          var argvec: seq[Value] = @[]
+          for i in 0..<arghead.len:
+            let k = arghead[i]
+            if k == nil or k.vType != V_PAIR: break l1
+            argvec.add(k.car)
+            arghead[i] = k.cdr
+          let r = if x[0].vType == V_CLOSURE:
+                    x[0].applyClosure(argvec, nil, e)
+                  else:
+                    x[0].applyPrimitive(argvec, e, call)
+          resseq.add(r)
+      return resseq.seqToValueList()
+  )
+)
+
+rootEnv.registerValue(
+  "filter",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 2: call.invalidFormErrorWithReason("filter", "2 argument")
+      call.ensureArgOfType(x[0], 0, @[V_CLOSURE, V_PRIMITIVE])
+      if not x[1].isValueAList():
+        call.errorWithReason("Type error: a proper LIST required but not found at argument no. 2")
+      var r = x[1].valueListToSeq().filter(
+        proc (v: Value): bool =
+          let vv = if x[0].vType == V_CLOSURE:
+                     x[0].applyClosure(@[v], nil, e)
+                   else:
+                     x[0].applyPrimitive(@[v], e, call)
+          return not (vv.vType == V_BOOL and vv.bVal == false)
+      )
+      return r.seqToValueList()
+  )
+)
+
+rootEnv.registerValue(
+  "member",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 2: call.invalidFormErrorWithReason("member", "2 argument")
+      call.ensureArgOfType(x[1], 1, V_PAIR)
+      var subj = x[1]
+      while subj.vType == V_PAIR:
+        if x[0].valueEqual(subj.car): return subj
+        subj = subj.cdr
+      if subj != nil:
+        call.errorWithReason("Type error: a proper LIST is required.")
+      return GlobalFalseValue
+  )
+)
+
+rootEnv.registerValue(
+  "assoc",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 2: call.invalidFormErrorWithReason("assoc", "2 argument")
+      call.ensureArgOfType(x[1], 1, V_PAIR)
+      var subj = x[1]
+      while subj.vType == V_PAIR:
+        if subj.car == nil or subj.car.vType != V_PAIR:
+          call.errorWithReason("Type error: non-pair found in argument no.2 of assoc")
+        if subj.car.car.valueEqual(x[0]): return subj.car
+        subj = subj.cdr
+      if subj != nil:
+        call.errorWithReason("Type error: non-pair found in argument no.2 of assoc")
+      return GlobalFalseValue
   )
 )
