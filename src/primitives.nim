@@ -1204,3 +1204,63 @@ rootEnv.registerValue(
       return GlobalFalseValue
   )
 )
+
+rootEnv.registerValue(
+  "mkstr",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 2: call.invalidFormErrorWithReason("mkstr", "2 arguments")
+      call.ensureArgOfType(x[0], 0, V_INTEGER)
+      call.ensureArgOfType(x[1], 1, V_CHAR)
+      var s = ""
+      for k in 0..<x[0].iVal: s.add(x[1].chVal)
+      return mkStrValue(s)
+  )
+)
+
+rootEnv.registerValue(
+  "strlen",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("strlen", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRING)
+      return mkIntegerValue(x[0].strval.len)
+  )
+)
+
+rootEnv.registerValue(
+  "strlist",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("strlist", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRING)
+      var r: seq[char] = @[]
+      for k in x[0].strVal: r.add(k)
+      return r.mapIt(mkCharValue(it)).seqToValueList()
+  )
+)
+
+rootEnv.registerValue(
+  "strvec",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("strlist", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRING)
+      var r: seq[char] = @[]
+      return mkVectorValue(r.mapIt(mkCharValue(it)))
+  )
+)
+
+rootEnv.registerValue(
+  "str++",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      var res = ""
+      for i in 0..<x.len:
+        call.ensureArgOfType(x[i], i, V_STRING)
+        res &= x[i].strval
+      return mkStrValue(res)
+  )
+)
+
+  

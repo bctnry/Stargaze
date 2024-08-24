@@ -215,16 +215,13 @@ A few functions that should be able to be defined using the language itself is d
 + =(bit>> INT INT)=: Right shift.
 + =(biti>> INT INT)=: Algorithmic right shift.
 
-** COMMENT Vector operations
+** String operations
 
-
-** COMMENT String operations
-
-+ =(mkstr N CHAR)=:
-+ =(strlen STR)=:
++ =(mkstr N CHAR)=: Makes a string of length =N= consisting of only character =CHAR=.
++ =(strlen STR)=: Returns the length of the string =STR=.
 + =(strlist STR)=: Convert a string to a list of characters.
 + =(strvec STR)=: Convert a string to a vector of characters.
-+ =(str++ STR1 ...)=: Equivalent to =strappend=.
++ =(str++ STR1 ...)=: Concatenates =STR1= and the rest into one single string.
 
 ** COMMENT Generators
 
