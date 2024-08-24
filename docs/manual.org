@@ -91,6 +91,10 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 ** Miscellaneous
 
 + =(atom? EXP)=: Check if =EXP= is an atom, i.e. a symbol, an integer, a boolean, a string, a character, or the empty list.
++ =(closure? EXP)=: Check if =EXP= is a closure.
++ =(primitive? EXP)=: Check if =EXP= is a primitive.
++ =(procedure? EXP)=: Check if =EXP= is a closure or primitive.
+  + Note that in Stargaze lingo a "primitive" refers to primitives that can be applied like a function (unlike things like =fn= and =quote=, which are called "special forms" and are called "syntax forms" in other LISP-like languages) and a "closure" refers to any anonymous function created during the course of execution.
 
 ** Integer
 
@@ -205,15 +209,14 @@ A few functions that should be able to be defined using the language itself is d
 + =(member EXP LIST)=: Check if =EXP= is in the list =LIST=. If it is, returns the part of =LIST= starting from =EXP=; if not, return the false value.
 + =(assoc EXP LIST)=: Check if =EXP= is in the assoc list =LIST=. An assoc list in LISP-like languages is a kind of list that consists of key-value pairs. If there is a key-value pair that uses =EXP= as the key, this primitive will return that key-value pair; or else, it will return the false value.
 
-** COMMENT Bitwise operations
+** Bitwise operations
 
 + =(bit~ INT)=: Bitwise not.
-+ =(bit& INT INT)=: Bitwise and.
-+ =(bit^ INT INT)=: Bitwise xor.
-+ =(bit| INT INT)=: Bitwise or.
++ =(bit& INT ...)=: Bitwise and.
++ =(bit^ INT ...)=: Bitwise xor.
++ =(bit| INT ...)=: Bitwise or.
 + =(bit<< INT INT)=: Left shift.
-+ =(bit>> INT INT)=: Right shift.
-+ =(biti>> INT INT)=: Algorithmic right shift.
++ =(bit>> INT INT)=: Right shift (left-side padded with 0)
 
 ** String operations
 

@@ -3,6 +3,7 @@ import std/sequtils
 import std/syncio
 import std/options
 import std/strutils
+import std/bitops
 import std/math
 import defs
 import core
@@ -1263,4 +1264,89 @@ rootEnv.registerValue(
   )
 )
 
-  
+rootEnv.registerValue(
+  "bit~",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("bit~", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_INTEGER)
+      return mkIntegerValue(x[0].iVal.bitnot)
+  )
+)
+
+rootEnv.registerValue(
+  "bit&",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len < 1: call.invalidFormErrorWithReason("bit&", "at least 1 argument")
+      var res = x[0].iVal
+      for i in 1..<x.len:
+        call.ensureArgOfType(x[i], i, V_INTEGER)
+        res = res and x[i].iVal
+      return mkIntegerValue(res)
+  )
+)
+
+rootEnv.registerValue(
+  "bit^",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len < 1: call.invalidFormErrorWithReason("bit^", "at least 1 argument")
+      var res = x[0].iVal
+      for i in 1..<x.len:
+        call.ensureArgOfType(x[i], i, V_INTEGER)
+        res = res xor x[i].iVal
+      return mkIntegerValue(res)
+  )
+)
+
+rootEnv.registerValue(
+  "bit<<",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 2: call.invalidFormErrorWithReason("bit<<", "2 argument")
+      call.ensureArgOfType(x[0], 0, V_INTEGER)
+      call.ensureArgOfType(x[1], 1, V_INTEGER)
+      return mkIntegerValue(x[0].iVal shl x[1].iVal)
+  )
+)
+
+rootEnv.registerValue(
+  "bit>>",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 2: call.invalidFormErrorWithReason("bit>>", "2 argument")
+      call.ensureArgOfType(x[0], 0, V_INTEGER)
+      call.ensureArgOfType(x[1], 1, V_INTEGER)
+      return mkIntegerValue(x[0].iVal shr x[1].iVal)
+  )
+)
+
+rootEnv.registerValue(
+  "closure?",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("closure?", "1 argument")
+      return (x[0].vType == V_CLOSURE).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "primitive?",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("closure?", "1 argument")
+      return (x[0].vType == V_PRIMITIVE).verdictValue
+  )
+)  
+
+rootEnv.registerValue(
+  "procedure?",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("closure?", "1 argument")
+      return (x[0].vType == V_CLOSURE or x[0].vType == V_PRIMITIVE).verdictValue
+  )
+)  
+
+

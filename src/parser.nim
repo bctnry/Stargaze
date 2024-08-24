@@ -62,6 +62,16 @@ proc skipWhiteAndComment(x: var Filelike): void =
     x.skipWhite
     if not x.hasWhiteOrComment: return
 
+proc nextChar(x: var Filelike): void =
+  discard x.tryReadChar()
+
+proc nextCharExistsAndIs(x: var Filelike, c: char): bool =
+  x.tryPeekChar().isSome() and x.tryPeekChar().get() == c
+proc nextCharExistsAndIsNot(x: var Filelike, c: char): bool =
+  x.tryPeekChar().isSome() and x.tryPeekChar().get() != c
+proc nextCharExistsAndSatisfy(x: var Filelike, c: proc (c: char): bool): bool =
+  x.tryPeekChar().isSome() and c(x.tryPeekChar().get())
+
 proc takeInteger(x: var Filelike): int =
   x.skipWhiteAndComment
   var s = ""
@@ -73,12 +83,36 @@ proc takeInteger(x: var Filelike): int =
       break
   return s.parseInt
 
+proc takeNumber(x: var Filelike): Node =
+  let firstChar = x.tryPeekChar().get()
+  var s = ""
+  s.add(firstChar)
+  x.nextChar
+  # NOTE: For whatever reasons Nim 2.0.4 refuses to compile when isDigit is used directly.
+  var f = proc (ch: char): bool = ch.isDigit
+  while x.nextCharExistsAndSatisfy(f):
+    s.add(x.tryReadChar().get())
+  if not x.nextCharExistsAndSatisfy(proc (ch: char): bool = ".eE".contains(ch)):
+    return mkIntegerNode(s.parseInt)
+  if x.nextCharExistsAndIs('.'):
+    s.add(x.tryReadChar().get())
+    while x.nextCharExistsAndSatisfy(f):
+      s.add(x.tryReadChar().get())
+  if not x.nextCharExistsAndIs('e') and not x.nextCharExistsAndIs('E'):
+    return mkFloatNode(s.parseFloat)
+  s.add(x.tryReadChar().get())
+  if x.nextCharExistsAndIs('+') or x.nextCharExistsAndIs('-'):
+    s.add(x.tryReadChar().get())
+  while x.nextCharExistsAndSatisfy(f):
+    s.add(x.tryReadChar().get())
+  return mkFloatNode(s.parseFloat)
+
 proc takeWord(x: var Filelike): string =
   x.skipWhiteAndComment
   var s = ""
   while x.tryPeekChar().isSome():
     let ch = x.tryPeekChar().get()
-    if ch.isAlphaNumeric() or "#\\<>+=/%$^&*@:!".contains(ch):
+    if ch.isAlphaNumeric() or "~#\\<>+=/%$^&*@:!-".contains(ch):
       s.add(ch)
       discard x.tryReadChar()
       continue
@@ -86,16 +120,6 @@ proc takeWord(x: var Filelike): string =
       break
   return s
       
-proc nextChar(x: var Filelike): void =
-  discard x.tryReadChar()
-
-proc nextCharExistsAndIs(x: var Filelike, c: char): bool =
-  x.tryPeekChar().isSome() and x.tryPeekChar().get() == c
-proc nextCharExistsAndIsNot(x: var Filelike, c: char): bool =
-  x.tryPeekChar().isSome() and x.tryPeekChar().get() != c
-proc nextCharExistsAndSatisfy(x: var Filelike, c: proc (c: char): bool): bool =
-  x.tryPeekChar().isSome() and c(x.tryPeekChar().get())
-
 proc recognizeCharLiteral1(x: string): Node
 proc recognizeCharLiteral2(hex: string): Node
 # NOTE: these two modifies the argument.
@@ -145,31 +169,20 @@ proc parseSingleNode*(x: var Filelike): Node =
                                       else:
                                         "unquotex"), preres], nil)
     return res.withMetadata(line, col, fn)
-  elif firstChar.isDigit:
-    var s = ""
-    s.add(firstChar)
+  elif firstChar == '-':
     x.nextChar
-    # NOTE: For whatever reasons Nim 2.0.4 refuses to compile when isDigit is used directly.
-    var f = proc (ch: char): bool = ch.isDigit
-    while x.nextCharExistsAndSatisfy(f):
-      s.add(x.tryReadChar().get())
-    if not x.nextCharExistsAndSatisfy(proc (ch: char): bool = ".eE".contains(ch)):
-      var res = mkIntegerNode(s.parseInt)
+    if x.nextCharExistsAndSatisfy(proc (ch: char): bool = ch.isDigit):
+      var z = x.takeNumber()
+      if z.nType == N_INTEGER: z.iVal = -z.iVal
+      elif z.nType == N_FLOAT: z.fVal = -z.fVal
+      return z.withMetadata(line, col, fn)
+    else:
+      var z = x.takeWord()
+      var res = mkWordNode("-" & z)
       return res.withMetadata(line, col, fn)
-    if x.nextCharExistsAndIs('.'):
-      s.add(x.tryReadChar().get())
-      while x.nextCharExistsAndSatisfy(f):
-        s.add(x.tryReadChar().get())
-    if not x.nextCharExistsAndIs('e') and not x.nextCharExistsAndIs('E'):
-      var res = mkFloatNode(s.parseFloat)
-      return res.withMetadata(line, col, fn)
-    s.add(x.tryReadChar().get())
-    if x.nextCharExistsAndIs('+') or x.nextCharExistsAndIs('-'):
-      s.add(x.tryReadChar().get())
-    while x.nextCharExistsAndSatisfy(f):
-      s.add(x.tryReadChar().get())
-    var res = mkFloatNode(s.parseFloat)
-    return res.withMetadata(line, col, fn)
+  elif firstChar.isDigit:
+    var r = x.takeNumber()
+    return r.withMetadata(line, col, fn)
   elif firstChar == '"':
     var str = ""
     x.nextChar

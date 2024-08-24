@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2024-08-24 Sat 15:03 -->
+<!-- 2024-08-24 Sat 16:15 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Stargaze user manual</title>
@@ -200,36 +200,38 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org71e8d12">1. Lexical syntax</a>
+<li><a href="#org2a269d5">1. Lexical syntax</a>
 <ul>
-<li><a href="#org8159d1c">1.1. Comment</a></li>
-<li><a href="#orgccbbc66">1.2. Booleans</a></li>
-<li><a href="#org9cefc55">1.3. Strings</a></li>
-<li><a href="#org5658891">1.4. Characters</a></li>
-<li><a href="#orgdb8715d">1.5. Vector</a></li>
-<li><a href="#orgbcccfbf">1.6. Quotes</a></li>
+<li><a href="#org01f6686">1.1. Comment</a></li>
+<li><a href="#org2c032fb">1.2. Booleans</a></li>
+<li><a href="#org423ac46">1.3. Strings</a></li>
+<li><a href="#orga58e28c">1.4. Characters</a></li>
+<li><a href="#org99b508f">1.5. Vector</a></li>
+<li><a href="#org6ad57eb">1.6. Quotes</a></li>
 </ul>
 </li>
-<li><a href="#org7f1798b">2. Built-in primitives</a>
+<li><a href="#org11f636b">2. Built-in primitives</a>
 <ul>
-<li><a href="#org90d62f7">2.1. Module-related</a></li>
-<li><a href="#orgb99bbf5">2.2. Miscellaneous</a></li>
-<li><a href="#org56b5632">2.3. Integer</a></li>
-<li><a href="#org5c1aea0">2.4. Floating-point</a></li>
-<li><a href="#org6996f35">2.5. Pair</a></li>
-<li><a href="#org86b485b">2.6. Character</a></li>
-<li><a href="#orgf1ccc36">2.7. String</a></li>
-<li><a href="#orgc816a2d">2.8. Boolean</a></li>
-<li><a href="#orga32cddc">2.9. Symbol</a></li>
-<li><a href="#orgb437431">2.10. List</a></li>
-<li><a href="#org9712b4e">2.11. Vector</a></li>
-<li><a href="#org0525b66">2.12. File input/output</a></li>
-<li><a href="#org6427b77">2.13. Iteration</a></li>
+<li><a href="#org16b3155">2.1. Module-related</a></li>
+<li><a href="#orgfdc0fba">2.2. Miscellaneous</a></li>
+<li><a href="#orgc5b5dc3">2.3. Integer</a></li>
+<li><a href="#org61348e2">2.4. Floating-point</a></li>
+<li><a href="#orgb087f9a">2.5. Pair</a></li>
+<li><a href="#orgc285dff">2.6. Character</a></li>
+<li><a href="#org2c287f9">2.7. String</a></li>
+<li><a href="#orgcb5e99c">2.8. Boolean</a></li>
+<li><a href="#orge217e39">2.9. Symbol</a></li>
+<li><a href="#org6ec3de0">2.10. List</a></li>
+<li><a href="#org37b7976">2.11. Vector</a></li>
+<li><a href="#org334c433">2.12. File input/output</a></li>
+<li><a href="#org5776854">2.13. Iteration</a></li>
 </ul>
 </li>
-<li><a href="#orga4aca88">3. Extended primitives</a>
+<li><a href="#org721c19d">3. Extended primitives</a>
 <ul>
-<li><a href="#org29c06e5">3.1. List libraries</a></li>
+<li><a href="#org84d03c4">3.1. List libraries</a></li>
+<li><a href="#org02a5227">3.2. Bitwise operations</a></li>
+<li><a href="#org2240943">3.3. String operations</a></li>
 </ul>
 </li>
 </ul>
@@ -240,12 +242,12 @@
 </p>
 
 
-<div id="outline-container-org71e8d12" class="outline-2">
-<h2 id="org71e8d12"><span class="section-number-2">1.</span> Lexical syntax</h2>
+<div id="outline-container-org2a269d5" class="outline-2">
+<h2 id="org2a269d5"><span class="section-number-2">1.</span> Lexical syntax</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org8159d1c" class="outline-3">
-<h3 id="org8159d1c"><span class="section-number-3">1.1.</span> Comment</h3>
+<div id="outline-container-org01f6686" class="outline-3">
+<h3 id="org01f6686"><span class="section-number-3">1.1.</span> Comment</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Comment in Stargaze starts with <code>;</code>.
@@ -253,8 +255,8 @@ Comment in Stargaze starts with <code>;</code>.
 </div>
 </div>
 
-<div id="outline-container-orgccbbc66" class="outline-3">
-<h3 id="orgccbbc66"><span class="section-number-3">1.2.</span> Booleans</h3>
+<div id="outline-container-org2c032fb" class="outline-3">
+<h3 id="org2c032fb"><span class="section-number-3">1.2.</span> Booleans</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Only the strings <code>#t</code> and <code>#f</code> are boolean values; they evaluate to true and false respectively.
@@ -262,8 +264,8 @@ Only the strings <code>#t</code> and <code>#f</code> are boolean values; they ev
 </div>
 </div>
 
-<div id="outline-container-org9cefc55" class="outline-3">
-<h3 id="org9cefc55"><span class="section-number-3">1.3.</span> Strings</h3>
+<div id="outline-container-org423ac46" class="outline-3">
+<h3 id="org423ac46"><span class="section-number-3">1.3.</span> Strings</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 There's only one kind of syntax for string literals: <code>"{string-piece}*"</code>, where <code>string-piece</code> is one of:
@@ -280,8 +282,8 @@ There's only one kind of syntax for string literals: <code>"{string-piece}*"</co
 </div>
 </div>
 
-<div id="outline-container-org5658891" class="outline-3">
-<h3 id="org5658891"><span class="section-number-3">1.4.</span> Characters</h3>
+<div id="outline-container-orga58e28c" class="outline-3">
+<h3 id="orga58e28c"><span class="section-number-3">1.4.</span> Characters</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Two kinds of syntax for character literals:
@@ -319,8 +321,8 @@ DEL
 </div>
 </div>
 
-<div id="outline-container-orgdb8715d" class="outline-3">
-<h3 id="orgdb8715d"><span class="section-number-3">1.5.</span> Vector</h3>
+<div id="outline-container-org99b508f" class="outline-3">
+<h3 id="org99b508f"><span class="section-number-3">1.5.</span> Vector</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
 Vector literals can be constructed by surrounding values with <code>#{</code> and <code>}</code>.
@@ -328,8 +330,8 @@ Vector literals can be constructed by surrounding values with <code>#{</code> an
 </div>
 </div>
 
-<div id="outline-container-orgbcccfbf" class="outline-3">
-<h3 id="orgbcccfbf"><span class="section-number-3">1.6.</span> Quotes</h3>
+<div id="outline-container-org6ad57eb" class="outline-3">
+<h3 id="org6ad57eb"><span class="section-number-3">1.6.</span> Quotes</h3>
 <div class="outline-text-3" id="text-1-6">
 <p>
 Four kinds of quote exists in Stargaze:
@@ -348,8 +350,8 @@ These quotes are equivalent to their s-expr counterparts at all time, e.g. <code
 </div>
 </div>
 
-<div id="outline-container-org7f1798b" class="outline-2">
-<h2 id="org7f1798b"><span class="section-number-2">2.</span> Built-in primitives</h2>
+<div id="outline-container-org11f636b" class="outline-2">
+<h2 id="org11f636b"><span class="section-number-2">2.</span> Built-in primitives</h2>
 <div class="outline-text-2" id="text-2">
 <ul class="org-ul">
 <li><code>(def NAME BODY)</code>: Bind the value <code>BODY</code> to the name <code>NAME</code> in the current environment.</li>
@@ -365,8 +367,8 @@ These quotes are equivalent to their s-expr counterparts at all time, e.g. <code
 </ul>
 </div>
 
-<div id="outline-container-org90d62f7" class="outline-3">
-<h3 id="org90d62f7"><span class="section-number-3">2.1.</span> Module-related</h3>
+<div id="outline-container-org16b3155" class="outline-3">
+<h3 id="org16b3155"><span class="section-number-3">2.1.</span> Module-related</h3>
 <div class="outline-text-3" id="text-2-1">
 <ul class="org-ul">
 <li><code>(include STR)</code>: Include a file.</li>
@@ -397,17 +399,23 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-orgb99bbf5" class="outline-3">
-<h3 id="orgb99bbf5"><span class="section-number-3">2.2.</span> Miscellaneous</h3>
+<div id="outline-container-orgfdc0fba" class="outline-3">
+<h3 id="orgfdc0fba"><span class="section-number-3">2.2.</span> Miscellaneous</h3>
 <div class="outline-text-3" id="text-2-2">
 <ul class="org-ul">
 <li><code>(atom? EXP)</code>: Check if <code>EXP</code> is an atom, i.e. a symbol, an integer, a boolean, a string, a character, or the empty list.</li>
+<li><code>(closure? EXP)</code>: Check if <code>EXP</code> is a closure.</li>
+<li><code>(primitive? EXP)</code>: Check if <code>EXP</code> is a primitive.</li>
+<li><code>(procedure? EXP)</code>: Check if <code>EXP</code> is a closure or primitive.
+<ul class="org-ul">
+<li>Note that in Stargaze lingo a "primitive" refers to primitives that can be applied like a function (unlike things like <code>fn</code> and <code>quote</code>, which are called "special forms" and are called "syntax forms" in other LISP-like languages) and a "closure" refers to any anonymous function created during the course of execution.</li>
+</ul></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org56b5632" class="outline-3">
-<h3 id="org56b5632"><span class="section-number-3">2.3.</span> Integer</h3>
+<div id="outline-container-orgc5b5dc3" class="outline-3">
+<h3 id="orgc5b5dc3"><span class="section-number-3">2.3.</span> Integer</h3>
 <div class="outline-text-3" id="text-2-3">
 <ul class="org-ul">
 <li><code>(int? EXP)</code>: Check if <code>EXP</code> is an integer.</li>
@@ -421,8 +429,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-org5c1aea0" class="outline-3">
-<h3 id="org5c1aea0"><span class="section-number-3">2.4.</span> Floating-point</h3>
+<div id="outline-container-org61348e2" class="outline-3">
+<h3 id="org61348e2"><span class="section-number-3">2.4.</span> Floating-point</h3>
 <div class="outline-text-3" id="text-2-4">
 <ul class="org-ul">
 <li><code>(float? EXP)</code>: Check if <code>EXP</code> is an integer.</li>
@@ -449,8 +457,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-org6996f35" class="outline-3">
-<h3 id="org6996f35"><span class="section-number-3">2.5.</span> Pair</h3>
+<div id="outline-container-orgb087f9a" class="outline-3">
+<h3 id="orgb087f9a"><span class="section-number-3">2.5.</span> Pair</h3>
 <div class="outline-text-3" id="text-2-5">
 <ul class="org-ul">
 <li><code>(cons EXP1 EXP2)</code>: Return the pair of <code>EXP1</code> and <code>EXP2</code></li>
@@ -464,8 +472,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-org86b485b" class="outline-3">
-<h3 id="org86b485b"><span class="section-number-3">2.6.</span> Character</h3>
+<div id="outline-container-orgc285dff" class="outline-3">
+<h3 id="orgc285dff"><span class="section-number-3">2.6.</span> Character</h3>
 <div class="outline-text-3" id="text-2-6">
 <ul class="org-ul">
 <li><code>(chr INT)</code>: Convert <code>INT</code> into the corresponding character.</li>
@@ -475,8 +483,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-orgf1ccc36" class="outline-3">
-<h3 id="orgf1ccc36"><span class="section-number-3">2.7.</span> String</h3>
+<div id="outline-container-org2c287f9" class="outline-3">
+<h3 id="org2c287f9"><span class="section-number-3">2.7.</span> String</h3>
 <div class="outline-text-3" id="text-2-7">
 <ul class="org-ul">
 <li><code>(strref STR I)</code>: Retrieve the <code>I</code>-th (starting from 0) character of the string <code>STR</code>.</li>
@@ -488,8 +496,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-orgc816a2d" class="outline-3">
-<h3 id="orgc816a2d"><span class="section-number-3">2.8.</span> Boolean</h3>
+<div id="outline-container-orgcb5e99c" class="outline-3">
+<h3 id="orgcb5e99c"><span class="section-number-3">2.8.</span> Boolean</h3>
 <div class="outline-text-3" id="text-2-8">
 <ul class="org-ul">
 <li><code>(and EXP1 ...)</code>: Returns <code>#f</code> if one of the <code>EXP</code> evalueates to <code>#f</code>, or else returns the last argument.</li>
@@ -499,8 +507,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-orga32cddc" class="outline-3">
-<h3 id="orga32cddc"><span class="section-number-3">2.9.</span> Symbol</h3>
+<div id="outline-container-orge217e39" class="outline-3">
+<h3 id="orge217e39"><span class="section-number-3">2.9.</span> Symbol</h3>
 <div class="outline-text-3" id="text-2-9">
 <ul class="org-ul">
 <li><code>(symstr SYM)</code>: Convert a symbol to a string.</li>
@@ -509,8 +517,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-orgb437431" class="outline-3">
-<h3 id="orgb437431"><span class="section-number-3">2.10.</span> List</h3>
+<div id="outline-container-org6ec3de0" class="outline-3">
+<h3 id="org6ec3de0"><span class="section-number-3">2.10.</span> List</h3>
 <div class="outline-text-3" id="text-2-10">
 <ul class="org-ul">
 <li><code>(list EXP1 ...)</code>: Combine its arguments into a list.</li>
@@ -519,8 +527,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-org9712b4e" class="outline-3">
-<h3 id="org9712b4e"><span class="section-number-3">2.11.</span> Vector</h3>
+<div id="outline-container-org37b7976" class="outline-3">
+<h3 id="org37b7976"><span class="section-number-3">2.11.</span> Vector</h3>
 <div class="outline-text-3" id="text-2-11">
 <ul class="org-ul">
 <li><code>(vec? EXP)</code>: Check if <code>EXP</code> is a vector.</li>
@@ -536,8 +544,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-org0525b66" class="outline-3">
-<h3 id="org0525b66"><span class="section-number-3">2.12.</span> File input/output</h3>
+<div id="outline-container-org334c433" class="outline-3">
+<h3 id="org334c433"><span class="section-number-3">2.12.</span> File input/output</h3>
 <div class="outline-text-3" id="text-2-12">
 <ul class="org-ul">
 <li><code>stdin</code>, <code>stdout</code>, <code>stderr</code>: Standard input, standard output and standard error.</li>
@@ -555,8 +563,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </div>
 </div>
 
-<div id="outline-container-org6427b77" class="outline-3">
-<h3 id="org6427b77"><span class="section-number-3">2.13.</span> Iteration</h3>
+<div id="outline-container-org5776854" class="outline-3">
+<h3 id="org5776854"><span class="section-number-3">2.13.</span> Iteration</h3>
 <div class="outline-text-3" id="text-2-13">
 <p>
 Iteration is important (at least for now) since we don't have tail-call optimization.
@@ -569,16 +577,16 @@ Iteration is important (at least for now) since we don't have tail-call optimiza
 </div>
 </div>
 
-<div id="outline-container-orga4aca88" class="outline-2">
-<h2 id="orga4aca88"><span class="section-number-2">3.</span> Extended primitives</h2>
+<div id="outline-container-org721c19d" class="outline-2">
+<h2 id="org721c19d"><span class="section-number-2">3.</span> Extended primitives</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 A few functions that should be able to be defined using the language itself is defined as primitives for performance, even if there aren't much performance to begin with&#x2026;
 </p>
 </div>
 
-<div id="outline-container-org29c06e5" class="outline-3">
-<h3 id="org29c06e5"><span class="section-number-3">3.1.</span> List libraries</h3>
+<div id="outline-container-org84d03c4" class="outline-3">
+<h3 id="org84d03c4"><span class="section-number-3">3.1.</span> List libraries</h3>
 <div class="outline-text-3" id="text-3-1">
 <ul class="org-ul">
 <li><code>(length LIST)</code>: Return the length of <code>LIST</code>.</li>
@@ -591,10 +599,37 @@ A few functions that should be able to be defined using the language itself is d
 </ul>
 </div>
 </div>
+
+<div id="outline-container-org02a5227" class="outline-3">
+<h3 id="org02a5227"><span class="section-number-3">3.2.</span> Bitwise operations</h3>
+<div class="outline-text-3" id="text-3-2">
+<ul class="org-ul">
+<li><code>(bit~ INT)</code>: Bitwise not.</li>
+<li><code>(bit&amp; INT ...)</code>: Bitwise and.</li>
+<li><code>(bit^ INT ...)</code>: Bitwise xor.</li>
+<li><code>(bit| INT ...)</code>: Bitwise or.</li>
+<li><code>(bit&lt;&lt; INT INT)</code>: Left shift.</li>
+<li><code>(bit&gt;&gt; INT INT)</code>: Right shift (left-side padded with 0)</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org2240943" class="outline-3">
+<h3 id="org2240943"><span class="section-number-3">3.3.</span> String operations</h3>
+<div class="outline-text-3" id="text-3-3">
+<ul class="org-ul">
+<li><code>(mkstr N CHAR)</code>: Makes a string of length <code>N</code> consisting of only character <code>CHAR</code>.</li>
+<li><code>(strlen STR)</code>: Returns the length of the string <code>STR</code>.</li>
+<li><code>(strlist STR)</code>: Convert a string to a list of characters.</li>
+<li><code>(strvec STR)</code>: Convert a string to a vector of characters.</li>
+<li><code>(str++ STR1 ...)</code>: Concatenates <code>STR1</code> and the rest into one single string.</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2024-08-24 Sat 15:03</p>
+<p class="date">Created: 2024-08-24 Sat 16:15</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
