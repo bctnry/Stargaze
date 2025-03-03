@@ -408,21 +408,6 @@ rootEnv.registerValue(
   )
 )
 
-# (strappend STR1 ...)
-rootEnv.registerValue(
-  "strappend",
-  mkPrimitiveValue(
-    proc (x: seq[Value], e: Env, call: Node): Value =
-      var res = ""
-      let arglen = x.len
-      for i in 0..<arglen:
-        let k = x[i]
-        call.ensureArgOfType(k, i, V_STRING)
-        res = res & k.strVal
-      return mkStrValue(res)
-  )
-)
-
 # (strsym STR)
 rootEnv.registerValue(
   "strsym",
@@ -1179,7 +1164,7 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("member", "2 argument")
       call.ensureArgOfType(x[1], 1, V_PAIR)
       var subj = x[1]
-      while subj.vType == V_PAIR:
+      while (not subj.isNil) and subj.vType == V_PAIR:
         if x[0].valueEqual(subj.car): return subj
         subj = subj.cdr
       if subj != nil:
@@ -1195,7 +1180,7 @@ rootEnv.registerValue(
       if x.len != 2: call.invalidFormErrorWithReason("assoc", "2 argument")
       call.ensureArgOfType(x[1], 1, V_PAIR)
       var subj = x[1]
-      while subj.vType == V_PAIR:
+      while (not subj.isNil) and subj.vType == V_PAIR:
         if subj.car == nil or subj.car.vType != V_PAIR:
           call.errorWithReason("Type error: non-pair found in argument no.2 of assoc")
         if subj.car.car.valueEqual(x[0]): return subj.car

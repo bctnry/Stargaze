@@ -32,15 +32,42 @@ proc processCurrentSourceFile*(): Value =
   
 proc readStrForREPL(p: File): Option[string] =
   var res: string = ""
+  var inString: bool = false
+  var count: int = 0
   try:
     while true:
       let ch = p.readChar()
-      if ch == '\n':
-        return some(res)
-      elif ch == '\r':
-        res.add('\n')
+      if inString:
+        case ch:
+          of '"':
+            inString = false
+            res.add(ch)
+          of '\\':
+            res.add(ch)
+            let ch = p.readChar()
+            res.add(ch)
+          else:
+            res.add(ch)
       else:
-        res.add(ch)
+        case ch:
+          of '\n':
+            if count <= 0:
+              return some(res)
+            else:
+              res.add(ch)
+          of '\r':
+            res.add('\n')
+          of '"':
+            inString = true
+            res.add(ch)
+          of '(':
+            res.add(ch)
+            count += 1
+          of ')':
+            res.add(ch)
+            count -= 1
+          else:
+            res.add(ch)
   except:
     if res.len() > 0: return some(res)
     else: return none(string)

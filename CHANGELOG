@@ -1,0 +1,12 @@
+2025-03-03 Sebastian Zack Tin Lahm-Lee <bctnry@sdf.org>
+
+	* v0.1.1
+	+ `strappend` is removed
+	+ bug in `member` and `assoc` fixed.
+	+ REPL support multiple line now.
+
+
+Copyright 2024--2025 Sebastian Zack Tin Lahm-Lee
+Copying and distribution of this file, with or without modification, are
+permitted provided the copyright notice and this notice are preserved.
+

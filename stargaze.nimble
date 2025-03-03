@@ -1,8 +1,8 @@
 # Package
 
-version       = "0.1.0"
-author        = "Zaaktin Lam"
-description   = "A new awesome nimble package"
+version       = "0.1.1"
+author        = "Sebastian Zack Tin Lahm-Lee"
+description   = ""
 license       = "BSD-3-Clause"
 srcDir        = "src"
 bin           = @["stargaze"]
