@@ -1,0 +1,81 @@
+(def cadr (fn (n) (car (cdr n))))
+(def strjoin
+  (fn (lst sep)
+    (str++ . (cons (car lst) (append . (map (fn (v) (list sep v)) (cdr lst)))))))
+    
+(def mk-json-number
+  (fn (n) (list 'json-number n)))
+(def mk-json-string
+  (fn (s) (list 'json-string s)))
+(def mk-json-null
+  (fn () (list 'json-null)))
+(def mk-json-bool
+  (fn (s) (list 'json-bool s)))
+(def mk-json-array
+  (fn (s) (list 'json-array s)))
+(def mk-json-object
+  (fn (s) (list 'json-object s)))
+(def json-obj?
+  (fn (s)
+    (and (pair? s)
+         (let ((tag (car s)))
+	   (or (equal tag 'json-bool)
+	       (equal tag 'json-number)
+	       (equal tag 'json-string)
+	       (equal tag 'json-null)
+	       (equal tag 'json-array)
+	       (equal tag 'json-object))))))
+(def json-number?
+  (fn (s)
+    (and (pair? s) (equal (car s) 'json-number))))
+(def json-string?
+  (fn (s)
+    (and (pair? s) (equal (car s) 'json-string))))
+(def json-null?
+  (fn (s)
+    (and (pair? s) (equal (car s) 'json-null))))
+(def json-bool?
+  (fn (s)
+    (and (pair? s) (equal (car s) 'json-bool))))
+(def json-array?
+  (fn (s)
+    (and (pair? s) (equal (car s) 'json-array))))
+(def json-object?
+  (fn (s)
+    (and (pair? s) (equal (car s) 'json-object))))
+
+(def serialize
+  (fn (x)
+    (cond
+      ((json-number? x) (floatstr (cadr x)))
+      ((json-null? x) "null")
+      ;; this line is technically not correct but it is obviously possible to
+      ;; have a version that is correct.
+      ((json-string? x) (str++ "\"" (cadr x) "\""))
+      ((json-bool? x) (if (cadr x) "true" "false"))
+      ((json-array? x) (str++ "[" (strjoin (map serialize (cadr x)) ", ") "]"))
+      ((json-object? x)
+       ;; `(cadr x)` should be assoc list here.
+       (str++ "{"
+        (strjoin (map (fn (p) (str++ "\"" (car p) "\"" ": " (serialize (cdr p)))) (cadr x)) ", ")
+        "}")))))
+
+(def println (fn (x) (begin (print x) (print "\n"))))
+(println (serialize (mk-json-number 3.14159)))
+(println (serialize (mk-json-bool #f)))
+(println (serialize (mk-json-bool #t)))
+(println (serialize (mk-json-string "abcde")))
+(println (serialize (mk-json-null)))
+(println (serialize (mk-json-array (list (mk-json-number 3.14159) (mk-json-bool #t) (mk-json-null))
+)))
+(println
+  (serialize (mk-json-object
+    (list (cons "key1" (mk-json-number 3.14159))
+          (cons "key2" (mk-json-bool #f))
+          (cons "key3" (mk-json-null))
+          (cons "key4" (mk-json-array
+            (list (mk-json-object (list (cons "name" (mk-json-string "john")) 
+                                        (cons "id" (mk-json-string "a01"))))
+                  (mk-json-object (list (cons "name" (mk-json-string "jill"))
+                                        (cons "id" (mk-json-string "a02")))))))))))
+					
