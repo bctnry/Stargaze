@@ -502,6 +502,16 @@ rootEnv.registerValue(
 )
 
 rootEnv.registerValue(
+  "bool?",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("bool?")
+      let r = x[0]
+      return (r != nil and r.vType == V_BOOL).verdictValue
+  )
+)
+
+rootEnv.registerValue(
   "equal",
   mkPrimitiveValue(
     proc (x: seq[Value], e: Env, call: Node): Value =

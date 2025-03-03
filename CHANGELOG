@@ -5,6 +5,7 @@
 	+ bug in `member` and `assoc` fixed.
 	+ REPL support multiple line now.
 	+ `bool` added to convert values into boolean values.
+	+ `bool?` added to check if a value is boolean (i.e. `#t` or `#f`)
 	+ together with `bool`, `and`, `or` and `not` now accepts a
 	slightly different definition of "booleanish false": integer
 	zero (*not* floating point zero), empty list and boolean false
