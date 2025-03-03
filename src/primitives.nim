@@ -138,6 +138,16 @@ rootEnv.registerValue(
   )
 )
 
+rootEnv.registerValue(
+  "intstr",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("instr", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_INTEGER)
+      return mkStrValue($x[0].iVal)
+  )
+)
+
 # (cons CAR CDR)
 rootEnv.registerValue(
   "cons",
@@ -295,12 +305,10 @@ rootEnv.registerValue(
 # (bool EXP1)
 rootEnv.registerValue(
   "bool",
-  mkSpecialFormValue(
-    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if tail != nil: tail.invalidFormErrorWithReason("bool")
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
       if x.len != 1: call.invalidFormErrorWithReason("bool", "1 argument")
-      let kres = x[0].evalSingle(e)
-      if kres.isBooleanishlyFalse():
+      if x[0].isBooleanishlyFalse():
         return GlobalFalseValue
       else:
         return GlobalTrueValue
@@ -1016,6 +1024,16 @@ rootEnv.registerValue(
       call.ensureArgOfType(x[0], 0, V_FLOAT)
       call.ensureArgOfType(x[1], 1, V_FLOAT)
       return (x[0].fVal > x[1].fVal).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "floatstr",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("floatstr", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_FLOAT)
+      return ($x[0].fVal).mkStrValue()
   )
 )
 

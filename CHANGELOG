@@ -10,6 +10,7 @@
 	slightly different definition of "booleanish false": integer
 	zero (*not* floating point zero), empty list and boolean false
 	are now the only values that are considered "false-ish".
+	+ `floatstr` and `intstr` added.
 
 
 Copyright 2024--2025 Sebastian Zack Tin Lahm-Lee

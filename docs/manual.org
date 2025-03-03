@@ -105,10 +105,11 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 + =(div EXP1 ...)=: Return =EXP1 div EXP2 div ...=
 + =(mod EXP1 EXP2)=: Return =EXP1 % EXP2=.
 + =(leq EXP1 EXP2)=, =(lt EXP1 EXP2)=, =(geq EXP1 EXP2)=, =(gt EXP1 EXP2)=: Check if =EXP1= is smaller or equal than, strictly smaller than, greater or equal than, and strictly greater than =EXP2= respectively.
++ =(intstr EXP)=: convert =EXP= into a string.
 
 ** Floating-point
 
-+ =(float? EXP)=: Check if =EXP= is an integer.
++ =(float? EXP)=: Check if =EXP= is an floating point number.
 + =(addf EXP ...)=: Return the sum of the arguments.
 + =(subf EXP1 ...)=: Return =EXP1 - EXP2 - ...=.
 + =(mulf EXP ...)=: Return the product of the arguments.
@@ -122,6 +123,7 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
   + =trunc= directly removes the decimal part.
   + Returns the argument itself if it is already an integer.
 + =(leqf EXP1 EXP2)=, =(ltf EXP1 EXP2)=, =(geqf EXP1 EXP2)=, =(gtf EXP1 EXP2)=: Check if =EXP1= is smaller or equal than, strictly smaller than, greater or equal than, and strictly greater than =EXP2= respectively.
++ =(floatstr EXP)=: convert =EXP= into a string.
 
 + =(eqnum EXP1 EXP2)=: Return if =EXP1= and =EXP2= has the same numerical value.
   
@@ -145,7 +147,6 @@ in the imported module; =NEW_NAME= would be the effective name in the *importing
 
 + =(strref STR I)=: Retrieve the =I=-th (starting from 0) character of the string =STR=.
 + =(substr STR START END?)=: Retrieve the substring of the string =STR= starting from index =START= to index =END=. =END= is optional; if it's not provided, this function takes the substring starting from index =START= to the end of the string.
-+ =(strappend STR1 ...)=: Return the string appended together from its arguments.
 + =(strsym STR)=: Convert a string to a symbol.
 + =(str? EXP)=: Check if =EXP= is a string.
 
