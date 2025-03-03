@@ -245,6 +245,9 @@ rootEnv.registerValue(
 #       call has the correct form). it would be way simpler to just not allow this kind
 #       of calls. the same goes for if and cond.
 # (and EXP1 ...)
+proc isBooleanishlyFalse(x: Value): bool {.inline.} =
+  return x.isNil or (x.vType == V_BOOL and x.bVal == false) or (x.vType == V_INTEGER and x.iVal == 0)
+
 rootEnv.registerValue(
   "and",
   mkSpecialFormValue(
@@ -254,7 +257,7 @@ rootEnv.registerValue(
       for k in x:
         let kres = k.evalSingle(e)
         lastVal = kres
-        if kres.vType == V_BOOL and kres.bVal == false:
+        if kres.isBooleanishlyFalse():
           return GlobalFalseValue
       return lastVal
   )
@@ -268,7 +271,7 @@ rootEnv.registerValue(
       if tail != nil: tail.invalidFormErrorWithReason("or")
       for k in x:
         let kres = k.evalSingle(e)
-        if not (kres.vType == V_BOOL and kres.bVal == false):
+        if not kres.isBooleanishlyFalse():
           return kres
       return GlobalFalseValue
   )
@@ -280,12 +283,27 @@ rootEnv.registerValue(
   mkSpecialFormValue(
     proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
       if tail != nil: tail.invalidFormErrorWithReason("not")
-      if x.len != 2: call.invalidFormErrorWithReason("not", "1 argument")
+      if x.len != 1: call.invalidFormErrorWithReason("not", "1 argument")
       let kres = x[0].evalSingle(e)
-      if kres.vType == V_BOOL and kres.bVal == false:
+      if kres.isBooleanishlyFalse():
         return GlobalTrueValue
       else:
         return GlobalFalseValue
+  )
+)
+
+# (bool EXP1)
+rootEnv.registerValue(
+  "bool",
+  mkSpecialFormValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("bool")
+      if x.len != 1: call.invalidFormErrorWithReason("bool", "1 argument")
+      let kres = x[0].evalSingle(e)
+      if kres.isBooleanishlyFalse():
+        return GlobalFalseValue
+      else:
+        return GlobalTrueValue
   )
 )
 

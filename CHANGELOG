@@ -4,6 +4,11 @@
 	+ `strappend` is removed
 	+ bug in `member` and `assoc` fixed.
 	+ REPL support multiple line now.
+	+ `bool` added to convert values into boolean values.
+	+ together with `bool`, `and`, `or` and `not` now accepts a
+	slightly different definition of "booleanish false": integer
+	zero (*not* floating point zero), empty list and boolean false
+	are now the only values that are considered "false-ish".
 
 
 Copyright 2024--2025 Sebastian Zack Tin Lahm-Lee
