@@ -3,12 +3,12 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2025-03-03 一 18:40 -->
+<!-- 2025-03-08 六 17:07 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Stargaze user manual</title>
 <meta name="generator" content="Org Mode" />
-<style>
+<style type="text/css">
   #content { max-width: 60em; margin: auto; }
   .title  { text-align: center;
              margin-bottom: .2em; }
@@ -200,38 +200,39 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orga7f600b">1. Lexical syntax</a>
+<li><a href="#org447b93c">1. Lexical syntax</a>
 <ul>
-<li><a href="#orgf0a9b95">1.1. Comment</a></li>
-<li><a href="#orgc7d99d9">1.2. Booleans</a></li>
-<li><a href="#org7158f16">1.3. Strings</a></li>
-<li><a href="#orgf1bd067">1.4. Characters</a></li>
-<li><a href="#org4b78d49">1.5. Vector</a></li>
-<li><a href="#org0ce4e6c">1.6. Quotes</a></li>
+<li><a href="#orga5d5571">1.1. Comment</a></li>
+<li><a href="#org10205c8">1.2. Booleans</a></li>
+<li><a href="#orgc56e646">1.3. Strings</a></li>
+<li><a href="#org89f9055">1.4. Characters</a></li>
+<li><a href="#orgec974f3">1.5. Vector</a></li>
+<li><a href="#org08cf229">1.6. Quotes</a></li>
 </ul>
 </li>
-<li><a href="#org1fa1a11">2. Built-in primitives</a>
+<li><a href="#orgacc39c6">2. Built-in primitives</a>
 <ul>
-<li><a href="#org19918e9">2.1. Module-related</a></li>
-<li><a href="#orga2f216d">2.2. Miscellaneous</a></li>
-<li><a href="#org0821a42">2.3. Integer</a></li>
-<li><a href="#orga098bf3">2.4. Floating-point</a></li>
-<li><a href="#org6447ed3">2.5. Pair</a></li>
-<li><a href="#org6b1d47c">2.6. Character</a></li>
-<li><a href="#org7e42125">2.7. String</a></li>
-<li><a href="#orga611441">2.8. Boolean</a></li>
-<li><a href="#org7d3ba0c">2.9. Symbol</a></li>
-<li><a href="#orgbb9cd0a">2.10. List</a></li>
-<li><a href="#org7cdf069">2.11. Vector</a></li>
-<li><a href="#org2a9626f">2.12. File input/output</a></li>
-<li><a href="#orgf00f23b">2.13. Iteration</a></li>
+<li><a href="#orgd5bdd4a">2.1. Module-related</a></li>
+<li><a href="#orgc4c2396">2.2. Miscellaneous</a></li>
+<li><a href="#org1b2fc66">2.3. Integer</a></li>
+<li><a href="#org649ab76">2.4. Floating-point</a></li>
+<li><a href="#org32556e7">2.5. Pair</a></li>
+<li><a href="#org2225a55">2.6. Character</a></li>
+<li><a href="#orge008532">2.7. String</a></li>
+<li><a href="#orgfce5774">2.8. Boolean</a></li>
+<li><a href="#orgc04308d">2.9. Symbol</a></li>
+<li><a href="#org69408ec">2.10. List</a></li>
+<li><a href="#org5ffdeab">2.11. Vector</a></li>
+<li><a href="#org9ae5e80">2.12. File input/output</a></li>
+<li><a href="#org11b3fe8">2.13. Iteration</a></li>
+<li><a href="#orgc61a689">2.14. Structure operations</a></li>
 </ul>
 </li>
-<li><a href="#org56a63da">3. Extended primitives</a>
+<li><a href="#orgb924615">3. Extended primitives</a>
 <ul>
-<li><a href="#orge61bffe">3.1. List libraries</a></li>
-<li><a href="#org65557e8">3.2. Bitwise operations</a></li>
-<li><a href="#org175664d">3.3. String operations</a></li>
+<li><a href="#orgee74657">3.1. List libraries</a></li>
+<li><a href="#org50ff9fc">3.2. Bitwise operations</a></li>
+<li><a href="#orgd557851">3.3. String operations</a></li>
 </ul>
 </li>
 </ul>
@@ -240,32 +241,28 @@
 <p>
 (very early draft)
 </p>
-
-
-<div id="outline-container-orga7f600b" class="outline-2">
-<h2 id="orga7f600b"><span class="section-number-2">1.</span> Lexical syntax</h2>
+<div id="outline-container-org447b93c" class="outline-2">
+<h2 id="org447b93c"><span class="section-number-2">1.</span> Lexical syntax</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-orgf0a9b95" class="outline-3">
-<h3 id="orgf0a9b95"><span class="section-number-3">1.1.</span> Comment</h3>
+<div id="outline-container-orga5d5571" class="outline-3">
+<h3 id="orga5d5571"><span class="section-number-3">1.1.</span> Comment</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Comment in Stargaze starts with <code>;</code>.
 </p>
 </div>
 </div>
-
-<div id="outline-container-orgc7d99d9" class="outline-3">
-<h3 id="orgc7d99d9"><span class="section-number-3">1.2.</span> Booleans</h3>
+<div id="outline-container-org10205c8" class="outline-3">
+<h3 id="org10205c8"><span class="section-number-3">1.2.</span> Booleans</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Only the strings <code>#t</code> and <code>#f</code> are boolean values; they evaluate to true and false respectively.
 </p>
 </div>
 </div>
-
-<div id="outline-container-org7158f16" class="outline-3">
-<h3 id="org7158f16"><span class="section-number-3">1.3.</span> Strings</h3>
+<div id="outline-container-orgc56e646" class="outline-3">
+<h3 id="orgc56e646"><span class="section-number-3">1.3.</span> Strings</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 There's only one kind of syntax for string literals: <code>"{string-piece}*"</code>, where <code>string-piece</code> is one of:
@@ -281,9 +278,8 @@ There's only one kind of syntax for string literals: <code>"{string-piece}*"</co
 </ul>
 </div>
 </div>
-
-<div id="outline-container-orgf1bd067" class="outline-3">
-<h3 id="orgf1bd067"><span class="section-number-3">1.4.</span> Characters</h3>
+<div id="outline-container-org89f9055" class="outline-3">
+<h3 id="org89f9055"><span class="section-number-3">1.4.</span> Characters</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Two kinds of syntax for character literals:
@@ -302,13 +298,14 @@ As for the first kind, Scheme R4RS only explicitly declares a <code>#\space</cod
 <li><p>
 All of the standard ASCII names for non-printing characters are supported. They can be used by prefixing with <code>#\</code>, e.g. <code>#\NUL</code>:
 </p>
-<pre class="example">
-NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
+<div class="org-src-container">
+<pre class="src src-nil">NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
 BS      HT      LF      VT      FF      CR      SO      SI
 DLE     DC1     DC2     DC3     DC4     NAK     SYN     ETB
 CAN     EM      SUB     ESC     FS      GS      RS      US
 DEL
-</pre></li>
+</pre>
+</div></li>
 <li>A few other names are also defined:
 <ul class="org-ul">
 <li><code>#\esc</code>, for <code>#\ESC</code>. MIT Scheme used the string <code>#\altmode</code>, which we</li>
@@ -320,18 +317,16 @@ DEL
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org4b78d49" class="outline-3">
-<h3 id="org4b78d49"><span class="section-number-3">1.5.</span> Vector</h3>
+<div id="outline-container-orgec974f3" class="outline-3">
+<h3 id="orgec974f3"><span class="section-number-3">1.5.</span> Vector</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
 Vector literals can be constructed by surrounding values with <code>#{</code> and <code>}</code>.
 </p>
 </div>
 </div>
-
-<div id="outline-container-org0ce4e6c" class="outline-3">
-<h3 id="org0ce4e6c"><span class="section-number-3">1.6.</span> Quotes</h3>
+<div id="outline-container-org08cf229" class="outline-3">
+<h3 id="org08cf229"><span class="section-number-3">1.6.</span> Quotes</h3>
 <div class="outline-text-3" id="text-1-6">
 <p>
 Four kinds of quote exists in Stargaze:
@@ -349,12 +344,14 @@ These quotes are equivalent to their s-expr counterparts at all time, e.g. <code
 </div>
 </div>
 </div>
-
-<div id="outline-container-org1fa1a11" class="outline-2">
-<h2 id="org1fa1a11"><span class="section-number-2">2.</span> Built-in primitives</h2>
+<div id="outline-container-orgacc39c6" class="outline-2">
+<h2 id="orgacc39c6"><span class="section-number-2">2.</span> Built-in primitives</h2>
 <div class="outline-text-2" id="text-2">
 <ul class="org-ul">
-<li><code>(def NAME BODY)</code>: Bind the value <code>BODY</code> to the name <code>NAME</code> in the current environment.</li>
+<li><code>(def NAME BODY)</code>: Bind the value <code>BODY</code> to the name <code>NAME</code> in the current environment.
+<ul class="org-ul">
+<li><code>(def (FUNCNAME ARGS ...) BODY)</code>: Short hand for <code>(def FUNCNAME (fn (ARGS ...) BODY))</code>.</li>
+</ul></li>
 <li><code>(fn ARGLIST BODY)</code>: Anonymous function.</li>
 <li><code>(if COND THEN_CLAUSE ELSE_CLAUSE)</code>: Simple branching.</li>
 <li><code>(cond (COND1 CLAUSE1) ...)</code>: Multiway branching.</li>
@@ -366,9 +363,8 @@ These quotes are equivalent to their s-expr counterparts at all time, e.g. <code
 <li><code>(equal EXP1 EXP2)</code>: Check if <code>EXP1</code> and <code>EXP2</code> has the same value.</li>
 </ul>
 </div>
-
-<div id="outline-container-org19918e9" class="outline-3">
-<h3 id="org19918e9"><span class="section-number-3">2.1.</span> Module-related</h3>
+<div id="outline-container-orgd5bdd4a" class="outline-3">
+<h3 id="orgd5bdd4a"><span class="section-number-3">2.1.</span> Module-related</h3>
 <div class="outline-text-3" id="text-2-1">
 <ul class="org-ul">
 <li><code>(include STR)</code>: Include a file.</li>
@@ -398,9 +394,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-orga2f216d" class="outline-3">
-<h3 id="orga2f216d"><span class="section-number-3">2.2.</span> Miscellaneous</h3>
+<div id="outline-container-orgc4c2396" class="outline-3">
+<h3 id="orgc4c2396"><span class="section-number-3">2.2.</span> Miscellaneous</h3>
 <div class="outline-text-3" id="text-2-2">
 <ul class="org-ul">
 <li><code>(atom? EXP)</code>: Check if <code>EXP</code> is an atom, i.e. a symbol, an integer, a boolean, a string, a character, or the empty list.</li>
@@ -413,9 +408,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org0821a42" class="outline-3">
-<h3 id="org0821a42"><span class="section-number-3">2.3.</span> Integer</h3>
+<div id="outline-container-org1b2fc66" class="outline-3">
+<h3 id="org1b2fc66"><span class="section-number-3">2.3.</span> Integer</h3>
 <div class="outline-text-3" id="text-2-3">
 <ul class="org-ul">
 <li><code>(int? EXP)</code>: Check if <code>EXP</code> is an integer.</li>
@@ -429,9 +423,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-orga098bf3" class="outline-3">
-<h3 id="orga098bf3"><span class="section-number-3">2.4.</span> Floating-point</h3>
+<div id="outline-container-org649ab76" class="outline-3">
+<h3 id="org649ab76"><span class="section-number-3">2.4.</span> Floating-point</h3>
 <div class="outline-text-3" id="text-2-4">
 <ul class="org-ul">
 <li><code>(float? EXP)</code>: Check if <code>EXP</code> is an floating point number.</li>
@@ -458,9 +451,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org6447ed3" class="outline-3">
-<h3 id="org6447ed3"><span class="section-number-3">2.5.</span> Pair</h3>
+<div id="outline-container-org32556e7" class="outline-3">
+<h3 id="org32556e7"><span class="section-number-3">2.5.</span> Pair</h3>
 <div class="outline-text-3" id="text-2-5">
 <ul class="org-ul">
 <li><code>(cons EXP1 EXP2)</code>: Return the pair of <code>EXP1</code> and <code>EXP2</code></li>
@@ -473,9 +465,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org6b1d47c" class="outline-3">
-<h3 id="org6b1d47c"><span class="section-number-3">2.6.</span> Character</h3>
+<div id="outline-container-org2225a55" class="outline-3">
+<h3 id="org2225a55"><span class="section-number-3">2.6.</span> Character</h3>
 <div class="outline-text-3" id="text-2-6">
 <ul class="org-ul">
 <li><code>(chr INT)</code>: Convert <code>INT</code> into the corresponding character.</li>
@@ -484,9 +475,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org7e42125" class="outline-3">
-<h3 id="org7e42125"><span class="section-number-3">2.7.</span> String</h3>
+<div id="outline-container-orge008532" class="outline-3">
+<h3 id="orge008532"><span class="section-number-3">2.7.</span> String</h3>
 <div class="outline-text-3" id="text-2-7">
 <ul class="org-ul">
 <li><code>(strref STR I)</code>: Retrieve the <code>I</code>-th (starting from 0) character of the string <code>STR</code>.</li>
@@ -496,9 +486,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-orga611441" class="outline-3">
-<h3 id="orga611441"><span class="section-number-3">2.8.</span> Boolean</h3>
+<div id="outline-container-orgfce5774" class="outline-3">
+<h3 id="orgfce5774"><span class="section-number-3">2.8.</span> Boolean</h3>
 <div class="outline-text-3" id="text-2-8">
 <ul class="org-ul">
 <li><code>(and EXP1 ...)</code>: Returns <code>#f</code> if one of the <code>EXP</code> evalueates to <code>#f</code>, or else returns the last argument.</li>
@@ -507,9 +496,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org7d3ba0c" class="outline-3">
-<h3 id="org7d3ba0c"><span class="section-number-3">2.9.</span> Symbol</h3>
+<div id="outline-container-orgc04308d" class="outline-3">
+<h3 id="orgc04308d"><span class="section-number-3">2.9.</span> Symbol</h3>
 <div class="outline-text-3" id="text-2-9">
 <ul class="org-ul">
 <li><code>(symstr SYM)</code>: Convert a symbol to a string.</li>
@@ -517,9 +505,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-orgbb9cd0a" class="outline-3">
-<h3 id="orgbb9cd0a"><span class="section-number-3">2.10.</span> List</h3>
+<div id="outline-container-org69408ec" class="outline-3">
+<h3 id="org69408ec"><span class="section-number-3">2.10.</span> List</h3>
 <div class="outline-text-3" id="text-2-10">
 <ul class="org-ul">
 <li><code>(list EXP1 ...)</code>: Combine its arguments into a list.</li>
@@ -527,9 +514,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org7cdf069" class="outline-3">
-<h3 id="org7cdf069"><span class="section-number-3">2.11.</span> Vector</h3>
+<div id="outline-container-org5ffdeab" class="outline-3">
+<h3 id="org5ffdeab"><span class="section-number-3">2.11.</span> Vector</h3>
 <div class="outline-text-3" id="text-2-11">
 <ul class="org-ul">
 <li><code>(vec? EXP)</code>: Check if <code>EXP</code> is a vector.</li>
@@ -544,9 +530,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org2a9626f" class="outline-3">
-<h3 id="org2a9626f"><span class="section-number-3">2.12.</span> File input/output</h3>
+<div id="outline-container-org9ae5e80" class="outline-3">
+<h3 id="org9ae5e80"><span class="section-number-3">2.12.</span> File input/output</h3>
 <div class="outline-text-3" id="text-2-12">
 <ul class="org-ul">
 <li><code>stdin</code>, <code>stdout</code>, <code>stderr</code>: Standard input, standard output and standard error.</li>
@@ -563,9 +548,8 @@ in the imported module; <code>NEW_NAME</code> would be the effective name in the
 </ul>
 </div>
 </div>
-
-<div id="outline-container-orgf00f23b" class="outline-3">
-<h3 id="orgf00f23b"><span class="section-number-3">2.13.</span> Iteration</h3>
+<div id="outline-container-org11b3fe8" class="outline-3">
+<h3 id="org11b3fe8"><span class="section-number-3">2.13.</span> Iteration</h3>
 <div class="outline-text-3" id="text-2-13">
 <p>
 Iteration is important (at least for now) since we don't have tail-call optimization.
@@ -576,18 +560,284 @@ Iteration is important (at least for now) since we don't have tail-call optimiza
 </ul>
 </div>
 </div>
-</div>
+<div id="outline-container-orgc61a689" class="outline-3">
+<h3 id="orgc61a689"><span class="section-number-3">2.14.</span> Structure operations</h3>
+<div class="outline-text-3" id="text-2-14">
+<ul class="org-ul">
+<li><code>(defstruct NAME DESCRIPTOR...)</code>: Define a "struct".
+<ul class="org-ul">
+<li><code>(defstruct NAME FIELD1 ...)</code>: Define a simple record type.</li>
+<li><code>(defstruct NAME (TAGSYMBOL1 FIELD11 ...) ...)</code>: Define a struct that has multiple branch, similar to the algebraic datatypes / disjoint union in languages like Haskell and Standard ML.</li>
+</ul></li>
+</ul>
 
-<div id="outline-container-org56a63da" class="outline-2">
-<h2 id="org56a63da"><span class="section-number-2">3.</span> Extended primitives</h2>
+<p>
+When executed, a few new functions would be defined in the call site's environment:
+</p>
+
+<ul class="org-ul">
+<li><code>(NAME? EXP)</code>: Check of <code>EXP</code> evaluates to a value that is a struct of type <code>NAME</code>.</li>
+<li><code>(NAME EXP1 ...)</code>: Constructor for the struct type <code>NAME</code>. Defined only when <code>NAME</code> is defined as a simple record type.</li>
+<li><code>(NAME/FIELD1 EXP)</code>, &#x2026;: Field getters for the struct type <code>NAME</code>. Defined only when <code>NAME</code> is defined as a simple record type.</li>
+<li><code>(TAGSYMBOL1 EXP1 ...)</code>, &#x2026;: Constructors for the struct type <code>NAME</code>. Defined only when <code>NAME</code> is defined as a disjoint union.</li>
+<li><code>(NAME/TAGSYMBOL1/FIELD1 EXP)</code>, &#x2026;: Field getters for the struct type <code>NAME</code>. Defined only when <code>NAME</code> is defined as a disjoint union.</li>
+</ul>
+
+<p>
+For example, this:
+</p>
+
+<pre class="example" id="orge360f7f">
+(defstruct MyStruct fieldName1 fieldName2)
+</pre>
+
+<p>
+would have these functions defined:
+</p>
+
+<pre class="example" id="org9e6e93e">
+(MyStruct? EXP)
+(MyStruct EXP1 EXP2)
+(MyStruct/fieldName1 EXP)
+(MyStruct/fieldName2 EXP)
+</pre>
+
+<p>
+and it would be like this in Haskell:
+</p>
+
+<pre class="example" id="org35fd5b3">
+-- the name "MyStructConstructor1" itself is not important here because
+-- for Stargaze when the definition has only 1 branch this part is considered
+-- to be not exist.
+data MyStruct = MyStructConstructor1 {
+    fieldName1 :: Field1Type,
+    fieldName2 :: Field2Type
+}
+</pre>
+
+<p>
+or this in Nim:
+</p>
+
+<pre class="example" id="org4a0e97a">
+type
+  MyStruct = ref object
+    fieldName1: Field1Type
+    fieldName2: Field2Type
+</pre>
+
+<p>
+while this:
+</p>
+
+<pre class="example" id="orgbd88188">
+(defstruct Term
+  (TInt iVal)
+  (TVar vName)
+  (TApp appHead appArgs)
+  (TLambda lArgs lBody))
+</pre>
+
+<p>
+would have the following functions defined:
+</p>
+
+<pre class="example" id="org75aa2ec">
+(Term? EXP)
+(TInt EXP)
+(TVar EXP)
+(TApp EXP EXP)
+(TLambda EXP EXP)
+(Term/TInt/iVal EXP)
+(Term/TVar/vName EXP)
+(Term/TApp/appHead EXP)
+(Term/TApp/appArgs EXP)
+(Term/TLambda/lArgs EXP)
+(Term/TLambda/lBody EXP)
+</pre>
+
+<p>
+and it would be like this in Haskell:
+</p>
+
+<pre class="example" id="orgc21cc0a">
+data Term
+  = TInt Int
+  | TVar String
+  | TApp Term [Term]
+  | TLambda [String] Term
+</pre>
+
+<p>
+and this in Nim:
+</p>
+
+<pre class="example" id="orgad0c8e4">
+type
+  TermType* = enum
+    TInt
+    TVar
+    TApp
+    TLambea
+  Term* = ref object
+    case tType*: TermType
+    of TInt:
+      iVal*: int
+    of TVar:
+      vName*: string
+    of TApp:
+      appHead*: Term
+      appArgs*: seq[Term]
+    of TLambda:
+      lArgs*: seq[string]
+      lBody*: Term
+</pre>
+
+<p>
+Note that these two following examples are different: one is a simple record type, one is a disjoint union that has only 1 branch:
+</p>
+
+<pre class="example" id="orgab4e0cd">
+;; create a struct called "MyStruct" with 2 fields
+;; this is similar to this one in Haskell:
+;;     type MyStruct = (Field1Type, Field2Type)
+;;     myStruct_field1 :: MyStruct -&gt; Field1Type
+;;     myStruct_field2 :: MyStruct -&gt; Field2Type
+;;     myStruct_field1 (r, _) = r
+;;     myStruct_field2 (_, r) = r
+(defstruct MyStruct field1 field2)
+
+;; create a struct called "MyStruct" with 2 fields
+;; this is like the following in Haskell:
+;;     data MyStruct = MSConstr1 { field1 :: Field1Type, field2 ::  Field2Type }
+(defstruct MyStruct (MSConstr1 field1 field2))
+
+;; create a struct called "MyStruct" with 1 fields since the first symbol
+;; is considered to be a tag. This is like the following in Haskell:
+;;     data MyStruct = Field1 Field2Type
+(defstruct MyStruct (Field1 Field2)
+</pre>
+
+<ul class="org-ul">
+<li><code>(struct? EXP)</code>: Check if <code>EXP</code> evaluates to a struct value.</li>
+<li><code>(struct-major-label EXP)</code>: If <code>EXP</code> evaluates to a struct, return its "major label", which would be the <code>NAME</code> part of the struct.</li>
+<li><code>(struct-secondary-label EXP)</code>: If <code>EXP</code> evaluates to a struct, return its "secondary label", which woould be the <code>TAG-SYMBOL1</code> part of the struct.</li>
+</ul>
+
+<p>
+For example, when we have the following definition:
+</p>
+
+<pre class="example" id="org826f319">
+(defstruct mystruct1 field1 field2)
+(defstruct mystruct2 (MSConstr1 field1 field2))
+(defstruct mystruct3 (Field1 Field2))
+</pre>
+
+<p>
+The following expressions all evaluates to a struct value:
+</p>
+
+<pre class="example" id="orgadfe85c">
+(mystruct1 3 4)
+(mystruct2 'MSConstr1 3 4)
+(mystruct3 'Field1 4)
+(mystruct3 (strsym "Field1") 4)
+(mystruct3 (strsym (str++ "Fie" "ld" "1")) 4)
+</pre>
+
+<p>
+while these raises error:
+</p>
+
+<pre class="example" id="org65782c3">
+(mystruct1 3)  ;; missing one field
+(mystruct1 4 5 6)   ;; one field too many
+(mystruct2 'MSConstr2 3 4)  ;; tag not allowed; must be MSConstr1, but MSConstr2 found.
+(mystruct3 3 4)  ;; tag not allowed; must be 'Field1, but 3 found.
+</pre>
+
+<p>
+The "major label" of the examples above would be:
+</p>
+
+<pre class="example" id="org166d347">
+(struct-major-label (mystruct1 3 4))
+   ;; 'mystruct1
+(struct-major-label (mystruct2 'MSConstr1 3 4))
+   ;; 'mystruct2
+(struct-major-label (mystruct3 'Field1 4))
+   ;; 'mystruct3
+(struct-major-label (mystruct3 (strsym "Field1") 4))
+   ;; 'mystruct3
+(struct-major-label (mystruct3 (strsym (str++ "Fie" "ld" "1")) 4))
+   ;; 'mystruct3
+</pre>
+
+<p>
+and the "secondary label" of the examples above would be:
+</p>
+
+<pre class="example" id="org1bb6410">
+(struct-secondary-label (mystruct1 3 4))
+   ;; #f   (not applicable for simple struct)
+(struct-major-label (mystruct2 'MSConstr1 3 4))
+   ;; 'MSConstr1
+(struct-major-label (mystruct3 'Field1 4))
+   ;; 'Field1
+(struct-major-label (mystruct3 (strsym "Field1") 4))
+   ;; 'Field1
+(struct-major-label (mystruct3 (strsym (str++ "Fie" "ld" "1")) 4))
+   ;; 'Field1
+</pre>
+
+<ul class="org-ul">
+<li><code>(struct-arity EXP)</code>: If <code>EXP</code> evaluates to a struct, return its arity (i.e. the number of fields, major label &amp; secondary label not included); or else, return #f.</li>
+</ul>
+
+<p>
+Tags are not counted. Using the example above, the following to expressions both evaluate to the number 2:
+</p>
+
+<pre class="example" id="orgac09aaa">
+(struct-arity (mystruct1 3 4))   ;; 2
+(struct-arity (mystruct2 'MSConstr1 3 4))   ;; 2
+    ;; not 3, because 'MSConstr1 is not counted
+</pre>
+
+<ul class="org-ul">
+<li><code>(structvec EXP)</code>: Convert <code>EXP</code> into a vector, which would be its field list (in order) with its major label &amp; secondary label at the front. For example:</li>
+</ul>
+
+<pre class="example" id="org71ec1cd">
+(structvec (mystruct1 3 4))
+    ;; #{'mystruct1 #f 3 4}
+(structvec (mystruct2 'MSConstr1 3 4))
+    ;; #{'mystruct2 'MSConstr1 3 4}
+(structvec (mystruct3 'Field1 4))
+    ;; #{'mystruct3 'Field1 4}
+(structvec (mystruct3 (strsym "Field1") 4))
+    ;; #{'mystruct3 'Field1 4}
+(structvec (mystruct3 (strsym (str++ "Fie" "ld" "1")) 4))
+    ;; #{'mystruct3 'Field1 4}
+</pre>
+
+<ul class="org-ul">
+<li><code>(vecstruct EXP)</code>: Convert <code>EXP</code> (which should be a vector) into a struct. The vector should be in the form of <code>#{majorLabel secondaryLabel field ...}</code>. Basically <code>structvec</code>'s inverse action; see examples above.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb924615" class="outline-2">
+<h2 id="orgb924615"><span class="section-number-2">3.</span> Extended primitives</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 A few functions that should be able to be defined using the language itself is defined as primitives for performance, even if there aren't much performance to begin with&#x2026;
 </p>
 </div>
-
-<div id="outline-container-orge61bffe" class="outline-3">
-<h3 id="orge61bffe"><span class="section-number-3">3.1.</span> List libraries</h3>
+<div id="outline-container-orgee74657" class="outline-3">
+<h3 id="orgee74657"><span class="section-number-3">3.1.</span> List libraries</h3>
 <div class="outline-text-3" id="text-3-1">
 <ul class="org-ul">
 <li><code>(length LIST)</code>: Return the length of <code>LIST</code>.</li>
@@ -600,9 +850,8 @@ A few functions that should be able to be defined using the language itself is d
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org65557e8" class="outline-3">
-<h3 id="org65557e8"><span class="section-number-3">3.2.</span> Bitwise operations</h3>
+<div id="outline-container-org50ff9fc" class="outline-3">
+<h3 id="org50ff9fc"><span class="section-number-3">3.2.</span> Bitwise operations</h3>
 <div class="outline-text-3" id="text-3-2">
 <ul class="org-ul">
 <li><code>(bit~ INT)</code>: Bitwise not.</li>
@@ -614,9 +863,8 @@ A few functions that should be able to be defined using the language itself is d
 </ul>
 </div>
 </div>
-
-<div id="outline-container-org175664d" class="outline-3">
-<h3 id="org175664d"><span class="section-number-3">3.3.</span> String operations</h3>
+<div id="outline-container-orgd557851" class="outline-3">
+<h3 id="orgd557851"><span class="section-number-3">3.3.</span> String operations</h3>
 <div class="outline-text-3" id="text-3-3">
 <ul class="org-ul">
 <li><code>(mkstr N CHAR)</code>: Makes a string of length <code>N</code> consisting of only character <code>CHAR</code>.</li>
@@ -630,7 +878,7 @@ A few functions that should be able to be defined using the language itself is d
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2025-03-03 一 18:40</p>
+<p class="date">Created: 2025-03-08 六 17:07</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

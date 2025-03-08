@@ -155,6 +155,7 @@ type
     V_CHAR_INPUT
     V_CHAR_OUTPUT
     V_EOF
+    V_STRUCT
   ImportDescriptor* = ref object
     importPath*: string
     importNameMapping*: TableRef[string,string]
@@ -198,6 +199,10 @@ type
       charOutFile*: File
     of V_EOF:
       discard
+    of V_STRUCT:
+      sMajorLabel*: string
+      sSecondaryLabel*: string
+      sFieldList*: seq[Value]
 
 proc `$`*(vt: ValueType): string =
   case vt:
@@ -215,6 +220,7 @@ proc `$`*(vt: ValueType): string =
     of V_CHAR_INPUT: "CHAR_INPUT"
     of V_CHAR_OUTPUT: "CHAR_OUTPUT"
     of V_EOF: "EOF"
+    of V_STRUCT: "STRUCT"
 
 proc `$`*(x: Value): string =
   if x == nil: return "nil"
@@ -273,6 +279,8 @@ proc `$`*(x: Value): string =
                          else:
                            "OPEN") & ">"
     of V_EOF: "#eof"
+    of V_STRUCT:
+      "<" & x.sMajorLabel & "." & x.sSecondaryLabel & ":" & x.sFieldList.mapIt($it).join(",") & ">"
           
       
 proc mkEnv*(page: TableRef[string, Value], parent: Env): Env = Env(page: page, parent: parent)
@@ -303,6 +311,8 @@ proc mkPairValue*(car: Value, cdr: Value): Value = Value(vType: V_PAIR, car: car
 proc mkVectorValue*(vVal: seq[Value]): Value = Value(vType: V_VECTOR, vVal: vVal)
 proc mkCharInputValue*(f: File): Value = Value(vType: V_CHAR_INPUT, charInClosed: false, charInFile: f)
 proc mkCharOutputValue*(f: File): Value = Value(vType: V_CHAR_OUTPUT, charOutClosed: false, charOutFile: f)
+proc mkStructValue*(ml: string, sl: string, fl: seq[Value]): Value =
+  Value(vType: V_STRUCT, sMajorLabel: ml, sSecondaryLabel: sl, sFieldList: fl)
 let GlobalEOFValue*: Value = Value(vType: V_EOF)
 let GlobalTrueValue*: Value = Value(vType: V_BOOL, bVal: true)
 let GlobalFalseValue*: Value = Value(vType: V_BOOL, bVal: false)
@@ -328,8 +338,19 @@ proc valueEqual*(a: Value, b: Value): bool =
       while i < a.vVal.len:
         if not a.vVal[i].valueEqual(b.vVal[i]): return false
       return true
+    of V_STRUCT:
+      if not (
+        (a.sMajorLabel == b.sMajorLabel) and
+        (a.sSecondaryLabel == b.sSecondaryLabel) and
+        (a.sFieldList.len == b.sFieldList.len)
+      ): return false
+      var i = 0
+      while i < a.sFieldList.len:
+        if not a.sFieldList[i].valueEqual(b.sFieldList[i]): return false
+      return true
     else:
       return false
+          
 
 # NOTE THAT we only treat the boolean false value as false.
 # nil is treated as empty list and empty list only.

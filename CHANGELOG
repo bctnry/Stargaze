@@ -1,3 +1,9 @@
+2025-03-08 Sebastian Zack Tin Lahm-Lee <bctnry@sdf.org>
+
+	* v0.1.2
+	+ `def` added shorthand for defining functions
+	+ support for structs added; see manual.
+
 2025-03-03 Sebastian Zack Tin Lahm-Lee <bctnry@sdf.org>
 
 	* v0.1.1

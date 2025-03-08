@@ -46,6 +46,7 @@ proc quoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value
 proc qquoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value
 proc unquoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value
 proc fnF (x: seq[Node], tail: Node, e: Env, call: Node): Value
+proc defF (x: seq[Node], tail: Node, e: Env, call: Node): Value
 proc evalSingle*(x: Node, e: Env): Value =
   if x == nil: return nil
   case x.nType:
@@ -74,6 +75,7 @@ proc evalSingle*(x: Node, e: Env): Value =
       var el: seq[Node] = x.lVal[1..<x.lVal.len]
       var etail: Node = x.tail
       if x.lVal[0].isWordNodeOf("fn"): return fnF(el, etail, e, x)
+      if x.lVal[0].isWordNodeOf("def"): return defF(el, etail, e, x)
       elif x.lVal[0].isWordNodeOf("quote"): return quoteF(el, etail, e, x)
       elif x.lVal[0].isWordNodeOf("qquote"): return qquoteF(el, etail, e, x)
       elif x.lVal[0].isWordNodeOf("unquote"): return unquoteF(el, etail, e, x)
@@ -135,6 +137,32 @@ proc fnF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
   let r = mkClosureBase(x[0], x[1..<x.len])
   r.cenv = e
   return r
+proc defF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+  if tail != nil: tail.invalidFormErrorWithReason("def")
+  if x.len < 2: call.invalidFormErrorWithReason("def")
+  if x[0].nType == N_WORD:
+    let r = x[1..<x.len].evalMulti(e)
+    e.registerValue(x[0].wVal, r)
+  elif x[0].nType == N_LIST:
+    let callsyntax = x[0]
+    if callsyntax.lVal.len < 1: callsyntax.invalidFormErrorWithReason("def")
+    let name = callsyntax.lVal[0]
+    if name.nType != N_WORD: callsyntax.invalidFormErrorWithReason("def")
+    let argnlist = Node(line: callsyntax.line, col: callsyntax.col,
+                        filename: callsyntax.filename,
+                        nType: N_LIST,
+                        lVal: (
+                          if callsyntax.lVal.len <= 1: @[]
+                          else: callsyntax.lVal[1..^1]
+                        ),
+                        tail: callsyntax.tail)
+    let c = mkClosureBase(argnlist, x[1..^1])
+    c.cenv = e
+    e.registerValue(name.wVal, c)
+  else:
+    call.invalidFormErrorWithReason("def")
+  return nil
+
 proc quoteF (x: seq[Node], tail: Node, e: Env, call: Node): Value =
   if tail != nil: tail.invalidFormErrorWithReason("quote")
   if x.len != 1: call.invalidFormErrorWithReason("quote")

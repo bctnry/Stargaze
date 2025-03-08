@@ -63,6 +63,7 @@ These quotes are equivalent to their s-expr counterparts at all time, e.g. =''a=
 * Built-in primitives
 
 + =(def NAME BODY)=: Bind the value =BODY= to the name =NAME= in the current environment.
+  + =(def (FUNCNAME ARGS ...) BODY)=: Short hand for =(def FUNCNAME (fn (ARGS ...) BODY))=.
 + =(fn ARGLIST BODY)=: Anonymous function.
 + =(if COND THEN_CLAUSE ELSE_CLAUSE)=: Simple branching.
 + =(cond (COND1 CLAUSE1) ...)=: Multiway branching.
@@ -196,6 +197,227 @@ Iteration is important (at least for now) since we don't have tail-call optimiza
 
 + =(while COND BODY)=: Repeatedly execute =BODY= until =COND= evaluates to false. Returns nil.
 
+  
+** Structure operations
+
++ =(defstruct NAME DESCRIPTOR...)=: Define a "struct".
+  + =(defstruct NAME FIELD1 ...)=: Define a simple record type.
+  + =(defstruct NAME (TAGSYMBOL1 FIELD11 ...) ...)=: Define a struct that has multiple branch, similar to the algebraic datatypes / disjoint union in languages like Haskell and Standard ML.
+
+When executed, a few new functions would be defined in the call site's environment:
+
++ =(NAME? EXP)=: Check of =EXP= evaluates to a value that is a struct of type =NAME=.
++ =(NAME EXP1 ...)=: Constructor for the struct type =NAME=. Defined only when =NAME= is defined as a simple record type.
++ =(NAME/FIELD1 EXP)=, ...: Field getters for the struct type =NAME=. Defined only when =NAME= is defined as a simple record type.
++ =(TAGSYMBOL1 EXP1 ...)=, ...: Constructors for the struct type =NAME=. Defined only when =NAME= is defined as a disjoint union.
++ =(NAME/TAGSYMBOL1/FIELD1 EXP)=, ...: Field getters for the struct type =NAME=. Defined only when =NAME= is defined as a disjoint union.
+
+For example, this:
+
+#+begin_example stargaze
+(defstruct MyStruct fieldName1 fieldName2)
+#+end_example
+
+would have these functions defined:
+
+#+begin_example stargaze
+(MyStruct? EXP)
+(MyStruct EXP1 EXP2)
+(MyStruct/fieldName1 EXP)
+(MyStruct/fieldName2 EXP)
+#+end_example
+
+and it would be like this in Haskell:
+
+#+begin_example haskell
+-- the name "MyStructConstructor1" itself is not important here because
+-- for Stargaze when the definition has only 1 branch this part is considered
+-- to be not exist.
+data MyStruct = MyStructConstructor1 {
+    fieldName1 :: Field1Type,
+    fieldName2 :: Field2Type
+}
+#+end_example
+
+or this in Nim:
+
+#+begin_example nim
+type
+  MyStruct = ref object
+    fieldName1: Field1Type
+    fieldName2: Field2Type
+#+end_example
+
+while this:
+
+#+begin_example stargaze
+(defstruct Term
+  (TInt iVal)
+  (TVar vName)
+  (TApp appHead appArgs)
+  (TLambda lArgs lBody))
+#+end_example
+
+would have the following functions defined:
+
+#+begin_example stargaze
+(Term? EXP)
+(TInt EXP)
+(TVar EXP)
+(TApp EXP EXP)
+(TLambda EXP EXP)
+(Term/TInt/iVal EXP)
+(Term/TVar/vName EXP)
+(Term/TApp/appHead EXP)
+(Term/TApp/appArgs EXP)
+(Term/TLambda/lArgs EXP)
+(Term/TLambda/lBody EXP)
+#+end_example
+
+and it would be like this in Haskell:
+
+#+begin_example haskell
+data Term
+  = TInt Int
+  | TVar String
+  | TApp Term [Term]
+  | TLambda [String] Term
+#+end_example
+
+and this in Nim:
+
+#+begin_example nim
+type
+  TermType* = enum
+    TInt
+    TVar
+    TApp
+    TLambea
+  Term* = ref object
+    case tType*: TermType
+    of TInt:
+      iVal*: int
+    of TVar:
+      vName*: string
+    of TApp:
+      appHead*: Term
+      appArgs*: seq[Term]
+    of TLambda:
+      lArgs*: seq[string]
+      lBody*: Term
+#+end_example
+
+Note that these two following examples are different: one is a simple record type, one is a disjoint union that has only 1 branch:
+
+#+begin_example stargaze
+;; create a struct called "MyStruct" with 2 fields
+;; this is similar to this one in Haskell:
+;;     type MyStruct = (Field1Type, Field2Type)
+;;     myStruct_field1 :: MyStruct -> Field1Type
+;;     myStruct_field2 :: MyStruct -> Field2Type
+;;     myStruct_field1 (r, _) = r
+;;     myStruct_field2 (_, r) = r
+(defstruct MyStruct field1 field2)
+
+;; create a struct called "MyStruct" with 2 fields
+;; this is like the following in Haskell:
+;;     data MyStruct = MSConstr1 { field1 :: Field1Type, field2 ::  Field2Type }
+(defstruct MyStruct (MSConstr1 field1 field2))
+
+;; create a struct called "MyStruct" with 1 fields since the first symbol
+;; is considered to be a tag. This is like the following in Haskell:
+;;     data MyStruct = Field1 Field2Type
+(defstruct MyStruct (Field1 Field2)
+#+end_example
+    
++ =(struct? EXP)=: Check if =EXP= evaluates to a struct value.
++ =(struct-major-label EXP)=: If =EXP= evaluates to a struct, return its "major label", which would be the =NAME= part of the struct.
++ =(struct-secondary-label EXP)=: If =EXP= evaluates to a struct, return its "secondary label", which woould be the =TAG-SYMBOL1= part of the struct.
+
+For example, when we have the following definition:
+
+#+begin_example stargaze
+(defstruct mystruct1 field1 field2)
+(defstruct mystruct2 (MSConstr1 field1 field2))
+(defstruct mystruct3 (Field1 Field2))
+#+end_example
+
+The following expressions all evaluates to a struct value:
+
+#+begin_example stargaze
+(mystruct1 3 4)
+(mystruct2 'MSConstr1 3 4)
+(mystruct3 'Field1 4)
+(mystruct3 (strsym "Field1") 4)
+(mystruct3 (strsym (str++ "Fie" "ld" "1")) 4)
+#+end_example
+
+while these raises error:
+
+#+begin_example stargaze
+(mystruct1 3)  ;; missing one field
+(mystruct1 4 5 6)   ;; one field too many
+(mystruct2 'MSConstr2 3 4)  ;; tag not allowed; must be MSConstr1, but MSConstr2 found.
+(mystruct3 3 4)  ;; tag not allowed; must be 'Field1, but 3 found.
+#+end_example
+
+The "major label" of the examples above would be:
+
+#+begin_example stargaze
+(struct-major-label (mystruct1 3 4))
+   ;; 'mystruct1
+(struct-major-label (mystruct2 'MSConstr1 3 4))
+   ;; 'mystruct2
+(struct-major-label (mystruct3 'Field1 4))
+   ;; 'mystruct3
+(struct-major-label (mystruct3 (strsym "Field1") 4))
+   ;; 'mystruct3
+(struct-major-label (mystruct3 (strsym (str++ "Fie" "ld" "1")) 4))
+   ;; 'mystruct3
+#+end_example
+
+and the "secondary label" of the examples above would be:
+
+#+begin_example stargaze
+(struct-secondary-label (mystruct1 3 4))
+   ;; #f   (not applicable for simple struct)
+(struct-major-label (mystruct2 'MSConstr1 3 4))
+   ;; 'MSConstr1
+(struct-major-label (mystruct3 'Field1 4))
+   ;; 'Field1
+(struct-major-label (mystruct3 (strsym "Field1") 4))
+   ;; 'Field1
+(struct-major-label (mystruct3 (strsym (str++ "Fie" "ld" "1")) 4))
+   ;; 'Field1
+#+end_example
+    
++ =(struct-arity EXP)=: If =EXP= evaluates to a struct, return its arity (i.e. the number of fields, major label & secondary label not included); or else, return #f.
+
+Tags are not counted. Using the example above, the following to expressions both evaluate to the number 2:
+
+#+begin_example stargaze
+(struct-arity (mystruct1 3 4))   ;; 2
+(struct-arity (mystruct2 'MSConstr1 3 4))   ;; 2
+    ;; not 3, because 'MSConstr1 is not counted
+#+end_example
+
++ =(structvec EXP)=: Convert =EXP= into a vector, which would be its field list (in order) with its major label & secondary label at the front. For example:
+
+#+begin_example stargaze
+(structvec (mystruct1 3 4))
+    ;; #{'mystruct1 #f 3 4}
+(structvec (mystruct2 'MSConstr1 3 4))
+    ;; #{'mystruct2 'MSConstr1 3 4}
+(structvec (mystruct3 'Field1 4))
+    ;; #{'mystruct3 'Field1 4}
+(structvec (mystruct3 (strsym "Field1") 4))
+    ;; #{'mystruct3 'Field1 4}
+(structvec (mystruct3 (strsym (str++ "Fie" "ld" "1")) 4))
+    ;; #{'mystruct3 'Field1 4}
+#+end_example
+
++ =(vecstruct EXP)=: Convert =EXP= (which should be a vector) into a struct. The vector should be in the form of =#{majorLabel secondaryLabel field ...}=. Basically =structvec='s inverse action; see examples above.
+
 * Extended primitives
 
 A few functions that should be able to be defined using the language itself is defined as primitives for performance, even if there aren't much performance to begin with...
@@ -226,6 +448,7 @@ A few functions that should be able to be defined using the language itself is d
 + =(strlist STR)=: Convert a string to a list of characters.
 + =(strvec STR)=: Convert a string to a vector of characters.
 + =(str++ STR1 ...)=: Concatenates =STR1= and the rest into one single string.
+
 
 ** COMMENT Generators
 

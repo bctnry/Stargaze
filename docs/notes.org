@@ -1,0 +1,32 @@
+* Random notes on Stargaze
+
+This document is mostly written so I don't lose track of myself when designing & extending the language.
+
+** Naming conventions
+
+This is not a set of strict rules but a set of general guidelines for coming up with names for new primitives.
+
+Basically:
+
++ Predicates end with =?=.
++ Converter directly combines two short names together, e.g. =strsym= converts a =str= (string) to a =sym= symbol, =floatstr= converts a =float= (floating point) to a =str= (string).
+  + A set of short names are listed as follows:
+    + =vec=: Vector.
+    + =list=: LISP lists.
+    + =pair=: LISP pair.
+    + =int=: Integer.
+    + =float=: Floating point number.
+    + =char=: Character.
+    + =sym=: Symbol.
+  + Exceptions exists due to reasons.
+    + =chr= is used instead of =intchar=
+    + =ord= is used instead of =charint=
+    + =float= is used instead of =floatint= (compare with =bool=, which converts *any* value to a boolean.)
++ For operations on types, the name of the operation comes after the name of the types, e.g. =vecset!= is a =set!= for =vec= (vector), =strlen= is a =len= (length) for =str= (string)
+  + Operations on lists do not follow this convention since their names are well-known.
+  + When the operation is typically named with punctuations (e.g. bitwise left shift is =<<= in C) the punctuations comes after, e.g. it's =bit&= (bitwise AND) instead of =&bit=.
+  
+** "Major label" and "secondary label"??
+
+Stargaze currently implements struct as a distinct form of n-tuple, so =(defstruct STRUCT-NAME ...)= does not technically create a new type (unlike in languages like Haskell where types are conceptually not tags). I feel like calling =STRUCT-NAME= in this case the name of a "type" is a misnomer, thus the phrase "major label" and "secondary label" are used because that's exactly what they are.
+

@@ -12,8 +12,12 @@ import source
 import path
 import error
 
+{.push warning[UnusedImport]:off.}
 # DO NOT REMOVE THE FOLLOWING LINE - this is used to initialize primitives.
+# the primitives would be initialized upon importing this module since
+# importing also executes statements within that module as well.
 import primitives
+{.pop.}
 
 initNewEnv()
 proc processCurrentSourceFile*(): Value =

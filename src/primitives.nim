@@ -32,18 +32,6 @@ proc ensureArgOfType(n: Node, v: Value, i: int, t: seq[ValueType]): void =
 proc verdictValue(x: bool): Value =
   if x: GlobalTrueValue else: GlobalFalseValue
 
-# (def NAME BODY ...)
-rootEnv.registerValue(
-  "def",
-  mkSpecialFormValue(
-    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
-      if x[0].nType != N_WORD or x.len < 2:
-        call.invalidFormErrorWithReason("def")
-      let r = x[1..<x.len].evalMulti(e)
-      e.registerValue(x[0].wVal, r)
-      return nil
-  )
-)
 rootEnv.registerValue(
   "if",
   mkSpecialFormValue(
@@ -1380,4 +1368,169 @@ rootEnv.registerValue(
   )
 )  
 
+
+rootEnv.registerValue(
+  "struct?",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("struct?", "1 argument")
+      return (x[0].vType == V_STRUCT).verdictValue
+  )
+)
+
+rootEnv.registerValue(
+  "struct-major-label",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("struct-major-label", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRUCT)
+      return mkSymbolValue(x[0].sMajorLabel)
+  )
+)
+
+rootEnv.registerValue(
+  "struct-secondary-label",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("struct-secondary-label", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRUCT)
+      let sl = x[0].sSecondaryLabel
+      return (if sl.len == 0: GlobalFalseValue
+              else: mkSymbolValue(sl))
+  )
+)
+
+rootEnv.registerValue(
+  "structvec",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("structvec", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRUCT)
+      let ml = x[0].sMajorLabel
+      let sl = x[0].sSecondaryLabel
+      return mkVectorValue(@[mkSymbolValue(ml),
+                             (if sl.len == 0: GlobalFalseValue
+                              else: mkSymbolValue(sl))] & x[0].sFieldList)
+  )
+)
+
+rootEnv.registerValue(
+  "struct-arity",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("struct-arity", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_STRUCT)
+      return mkIntegerValue(x[0].sFieldList.len)
+  )
+)
+
+rootEnv.registerValue(
+  "vecstruct",
+  mkPrimitiveValue(
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != 1: call.invalidFormErrorWithReason("vecstruct", "1 argument")
+      call.ensureArgOfType(x[0], 0, V_VECTOR)
+      if x[0].vVal.len < 2: return GlobalFalseValue
+      var ml = ""
+      if x[0].vVal[0].vType == V_SYMBOL: ml = x[0].vVal[0].sVal
+      elif x[0].vVal[0].vType == V_STRING: ml = x[0].vVal[0].strVal
+      else: call.errorWithReason("first element of vector must be symbol or string")
+      var sl = ""
+      if x[0].vVal[1].vType == V_SYMBOL: sl = x[0].vVal[1].sVal
+      elif x[0].vVal[1].vType == V_STRING: sl = x[0].vVal[1].strVal
+      elif x[0].vVal[1].vType == V_BOOL and x[0].vVal[1].bVal == false:
+        sl = ""
+      else: call.errorWithReason("second element of vector must be symbol or string or #f")
+      return mkStructValue(ml, sl, x[0].vVal[2..^1])
+  )
+)
+
+proc mkFieldAccessor(fName: string, n: int, ml: string, sl: string = ""): proc (x: seq[Value], e: Env, call: Node): Value =
+    let nn = n
+    return (
+      proc(x: seq[Value], e: Env, call: Node): Value =
+        if x.len != 1: call.invalidFormErrorWithReason(fName)
+        call.ensureArgOfType(x[0], 0, V_STRUCT)
+        if x[0].sMajorLabel != ml: call.errorWithReason("major label mismatch: " & ml & " required but " & x[0].sMajorLabel & " found.")
+        if sl != "" and x[0].sSecondaryLabel != sl: call.errorWithReason("secondary label mismatch: " & sl & " required but " & x[0].sSecondaryLabel & " found.")
+        return x[0].sFieldList[nn]
+    )
+
+proc mkConstructor(ml: string, constrName: string, constrArity: int): proc (x: seq[Value], e: Env, call: Node): Value =
+  return (
+    proc (x: seq[Value], e: Env, call: Node): Value =
+      if x.len != constrArity: call.invalidFormErrorWithReason(constrName)
+      return mkStructValue(ml, constrName, x)
+  )
+      
+
+rootEnv.registerValue(
+  "defstruct",
+  mkSpecialFormValue(
+    proc (x: seq[Node], tail: Node, e: Env, call: Node): Value =
+      if tail != nil: tail.invalidFormErrorWithReason("defstruct")
+      if x.len < 1: call.invalidFormErrorWithReason("defstruct")
+      if x[0].nType != N_WORD: call.invalidFormErrorWithReason("defstruct")
+      let ml = x[0].wVal
+      let isSimple = x[1].nType == N_WORD
+      for i in 1..<x.len:
+        if (x[i].nType == N_WORD) != isSimple:
+          call.invalidFormErrorWithReason("defstruct")
+      let predicateName = ml & "?"
+      e.registerValue(
+        predicateName,
+        mkPrimitiveValue(
+          proc (x: seq[Value], e: Env, call: Node): Value =
+            if x.len != 1: call.invalidFormErrorWithReason(predicateName)
+            if x[0].vType != V_STRUCT: return GlobalFalseValue
+            if x[0].sMajorLabel != ml: return GlobalFalseValue
+            return GlobalTrueValue
+        )
+      )
+      if isSimple:
+        let arity = x.len-1
+        e.registerValue(
+          ml,
+          mkPrimitiveValue(
+            proc (x: seq[Value], e: Env, call: Node): Value =
+              if x.len != arity: call.invalidFormErrorWithReason(ml)
+              return mkStructValue(ml, "", x)
+          )
+        )
+        for i in 0..<arity:
+          let fieldName = x[i+1].wVal
+          let fName = ml & "/" & fieldName
+          e.registerValue(
+            fName,
+            mkPrimitiveValue(
+              mkFieldAccessor(fName, i, ml)
+            )
+          )
+      else:
+        let clauseLen = x.len-1
+        for i in 0..<clauseLen:
+          let clause = x[i+1]
+          # we don't support struct with variable len field list yet.
+          if not clause.tail.isNil: clause.invalidFormErrorWithReason("defstruct")
+          for j in 0..<clause.lVal.len:
+            if clause.lVal[j].nType != N_WORD: clause.invalidFormErrorWithReason("defstruct")
+          let constrName = clause.lVal[0].wVal
+          let constrArity = clause.lVal.len-1
+          e.registerValue(
+            constrName,
+            mkPrimitiveValue(
+              mkConstructor(ml, constrName, constrArity)
+            )
+          )
+          for j in 0..<constrArity:
+            let getterName = ml & "/" & constrName & "/" & clause.lVal[j+1].wVal
+            e.registerValue(
+              getterName,
+              mkPrimitiveValue(
+                mkFieldAccessor(getterName, j, ml, constrName)
+              )
+            )
+      return nil
+  )
+)
 
