@@ -102,7 +102,7 @@ when isMainModule:
       (fullKey: "--interactive", shortKey: "-i", takeValue: false),
     ].parseCmdArgs(args)
     if table[0].hasKey("--version"):
-      echo "0.1.1"
+      echo "0.1.2"
       quit(0)
     elif table[0].hasKey("--help"):
       echo helpStr
